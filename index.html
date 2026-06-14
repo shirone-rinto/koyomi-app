@@ -1,0 +1,3065 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>暦スコア</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #222426;
+      --muted: #66706f;
+      --paper: #fffaf1;
+      --panel: #ffffff;
+      --line: #e8dfcf;
+      --accent: #c84630;
+      --accent-soft: #f7d9c7;
+      --green: #237a57;
+      --green-soft: #dceee5;
+      --blue: #3468a0;
+      --blue-soft: #e3edf8;
+      --warn: #9b4b15;
+      --warn-soft: #f7e3cf;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(200, 70, 48, 0.12), transparent 42%),
+        linear-gradient(315deg, rgba(35, 122, 87, 0.12), transparent 46%),
+        var(--paper);
+      overflow-x: hidden;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    main {
+      width: min(760px, 100%);
+      max-width: 100%;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 18px 50px rgba(55, 42, 24, 0.12);
+    }
+
+    h1,
+    h2,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 18px;
+      font-size: 28px;
+      line-height: 1.25;
+    }
+
+    h2 {
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    .label {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fffdfa;
+      font: inherit;
+      font-size: 16px;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      outline: 3px solid rgba(200, 70, 48, 0.15);
+    }
+
+    .date {
+      margin-bottom: 20px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .score-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      padding: 18px 0;
+      border-block: 1px solid var(--line);
+    }
+
+    .key-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .key-name {
+      margin: 0;
+      color: var(--accent);
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .green {
+      color: var(--green);
+    }
+
+    .blue {
+      color: var(--blue);
+    }
+
+    .score {
+      display: grid;
+      place-items: center;
+      width: 108px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .score small {
+      display: block;
+      margin-top: -6px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .comment {
+      margin: 20px 0 0;
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .panel {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdfa;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .chip {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .chip.good {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .chip.warn {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .details {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    details.details {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    summary {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      max-width: 100%;
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+      white-space: normal;
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .detail {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(232, 223, 207, 0.75);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .detail:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .detail b {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .sub,
+    .notice {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .notice {
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--green-soft);
+      color: #215a43;
+    }
+
+    .medical {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--warn-soft);
+      color: var(--warn);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .medical.is-visible {
+      display: block;
+    }
+
+    .debug {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .debug-scroll {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdfa;
+    }
+
+    table {
+      width: 100%;
+      min-width: 980px;
+      border-collapse: collapse;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    th,
+    td {
+      padding: 9px 10px;
+      border-bottom: 1px solid rgba(232, 223, 207, 0.85);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      background: #fbf4e8;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fffdfa;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      resize: vertical;
+    }
+
+    body {
+      align-items: start;
+      padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+      background:
+        linear-gradient(135deg, rgba(233, 202, 114, 0.2), transparent 42%),
+        linear-gradient(315deg, rgba(127, 181, 199, 0.18), transparent 48%),
+        #fffaf0;
+    }
+
+    main {
+      width: min(860px, 100%);
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .app-header {
+      margin-bottom: 18px;
+    }
+
+    .app-header h1 {
+      margin-bottom: 8px;
+      font-size: 30px;
+    }
+
+    .app-lead {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .is-hidden {
+      display: none;
+    }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      color: #2f454d;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .day-phrase {
+      margin: 0;
+      color: #40575f;
+      line-height: 1.7;
+    }
+
+    .score {
+      background: #fff0b8;
+      color: #8a6516;
+    }
+
+    .conclusion-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      padding: 18px;
+      border: 1px solid #cfdfe4;
+      border-radius: 8px;
+      background: #f8fcfd;
+    }
+
+    .conclusion-score {
+      display: grid;
+      place-items: center;
+      width: 92px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #416d78;
+      color: #ffffff;
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .conclusion-score small {
+      display: block;
+      margin-top: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .conclusion-body {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .conclusion-body h2 {
+      margin: 0;
+      color: #2f454d;
+      font-size: 20px;
+      line-height: 1.35;
+    }
+
+    .conclusion-card .date {
+      margin: 0 0 6px;
+      font-size: 14px;
+    }
+
+    .conclusion-summary {
+      margin: 0;
+      color: #40575f;
+      line-height: 1.65;
+    }
+
+    .conclusion-points {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini-panel {
+      padding: 10px;
+      border: 1px solid #dbe7de;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .mini-panel.caution {
+      border-color: #ead7c0;
+      background: #fffaf5;
+    }
+
+    .mini-panel .label {
+      margin-bottom: 4px;
+    }
+
+    .mini-panel p {
+      margin: 0;
+      color: #34464c;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .theme-category-list {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      padding-left: 1.4em;
+      color: #34464c;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.55;
+    }
+
+    .theme-category-list li::marker {
+      color: #416d78;
+      font-weight: 800;
+    }
+
+    .score-breakdown {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .score-breakdown h3 {
+      margin: 0 0 6px;
+      font-size: 13px;
+      color: #2f454d;
+    }
+
+    .breakdown-list {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: #34464c;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .breakdown-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .breakdown-list span:first-child {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .breakdown-list .value {
+      flex: none;
+      font-weight: 800;
+    }
+
+    .breakdown-list .plus {
+      color: var(--green);
+    }
+
+    .breakdown-list .minus {
+      color: var(--warn);
+    }
+
+    .soft-card {
+      padding: 16px;
+      border: 1px solid #e2e5d6;
+      border-radius: 8px;
+      background: #fffdfa;
+    }
+
+    .soft-card.caution {
+      background: #fff7ed;
+    }
+
+    .text-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: #34464c;
+      line-height: 1.65;
+    }
+
+    .text-list li {
+      padding-left: 1.1em;
+      text-indent: -1.1em;
+    }
+
+    .more-actions {
+      margin-top: 10px;
+    }
+
+    .more-actions summary {
+      min-height: 32px;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    .ranking {
+      padding: 16px;
+      border: 1px solid #d8e5e9;
+      border-radius: 8px;
+      background: #fbfdfe;
+    }
+
+    .ranking > summary {
+      width: fit-content;
+      margin-bottom: 14px;
+      background: #edf7fa;
+      color: #416d78;
+    }
+
+    .ranking-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .ranking-meta {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .next-best-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid #dbe7de;
+      border-radius: 8px;
+      background: #f9fcf8;
+    }
+
+    .next-best-card h2 {
+      margin: 0 0 6px;
+      color: #2f454d;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .next-best-date {
+      margin: 0 0 8px;
+      color: #40575f;
+      font-weight: 800;
+      line-height: 1.5;
+    }
+
+    .next-best-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .next-best-score {
+      color: #237a57;
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1;
+      text-align: right;
+    }
+
+    .next-best-score small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .next-best-factors {
+      margin-top: 12px;
+    }
+
+    .month-card {
+      padding: 16px;
+      border: 1px solid #d8e5e9;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .month-header {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .month-title {
+      margin: 0;
+      color: #2f454d;
+      font-size: 18px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .month-nav {
+      min-height: 38px;
+      padding: 7px 10px;
+      border: 1px solid #d8e5e9;
+      border-radius: 8px;
+      color: #416d78;
+      background: #edf7fa;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .calendar-weekdays,
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .calendar-weekdays {
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .calendar-day {
+      min-height: 76px;
+      padding: 8px;
+      border: 1px solid #e2e5d6;
+      border-radius: 8px;
+      color: var(--ink);
+      background: #ffffff;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .calendar-day.is-empty {
+      border-color: transparent;
+      background: transparent;
+      cursor: default;
+    }
+
+    .calendar-day.is-selected {
+      border-color: #416d78;
+      box-shadow: inset 0 0 0 2px #416d78;
+    }
+
+    .calendar-day.is-today {
+      outline: 3px solid rgba(200, 70, 48, 0.2);
+      outline-offset: 1px;
+    }
+
+    .calendar-date {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .calendar-score {
+      display: block;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .score-excellent {
+      border-color: #a9d9c3;
+      background: #e7f6ee;
+    }
+
+    .score-good {
+      border-color: #bfddea;
+      background: #e9f6fb;
+    }
+
+    .score-normal {
+      background: #ffffff;
+    }
+
+    .score-watch {
+      border-color: #efd0ad;
+      background: #fff4e8;
+    }
+
+    .score-caution {
+      border-color: #e6b7ae;
+      background: #fdebe8;
+    }
+
+    .category-overview {
+      padding: 16px;
+      border: 1px solid #d8e5e9;
+      border-radius: 8px;
+      background: #fbfdfe;
+    }
+
+    .category-overview h2 {
+      margin: 0 0 12px;
+      color: #2f454d;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .category-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 58px;
+      padding: 10px 12px;
+      border: 1px solid #e2e5d6;
+      border-radius: 8px;
+      color: var(--ink);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .category-card.is-active {
+      border-color: #416d78;
+      box-shadow: inset 0 0 0 2px #416d78;
+    }
+
+    .category-name {
+      min-width: 0;
+      color: #2f454d;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .category-score {
+      color: #2f454d;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .ranking-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .ranking-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      padding: 12px;
+      border: 1px solid #e2e5d6;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .ranking-rank {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #edf7fa;
+      color: #416d78;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .ranking-date {
+      margin: 0 0 4px;
+      color: #2f454d;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .ranking-comment {
+      margin: 0 0 8px;
+      color: #40575f;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .ranking-factors {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .ranking-score {
+      color: #8a6516;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+      text-align: right;
+    }
+
+    .ranking-score small {
+      display: block;
+      margin-top: 3px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .koyomi-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .key-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .key-name {
+      color: #416d78;
+      font-size: 24px;
+    }
+
+    .details {
+      margin-top: 18px;
+    }
+
+    details.details > summary,
+    details.debug > summary {
+      width: fit-content;
+      background: #edf7fa;
+      color: #416d78;
+    }
+
+    .debug {
+      border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 680px) {
+      main {
+        padding: 18px;
+      }
+
+      .controls,
+      .conclusion-card,
+      .conclusion-points,
+      .score-breakdown,
+      .next-best-card,
+      .category-grid,
+      .category-card,
+      .ranking-controls,
+      .ranking-item,
+      .ranking-factors,
+      .key-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .key-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .ranking-score {
+        text-align: left;
+      }
+
+      .next-best-score {
+        text-align: left;
+      }
+
+      .score {
+        width: 94px;
+      }
+
+      .calendar-weekdays,
+      .calendar-grid {
+        gap: 4px;
+      }
+
+      .calendar-day {
+        min-height: 58px;
+        padding: 6px;
+      }
+
+      .calendar-score {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+      }
+
+      main {
+        padding: 14px;
+        border-radius: 8px;
+      }
+
+      .app-header h1 {
+        font-size: 24px;
+        line-height: 1.3;
+      }
+
+      .app-lead,
+      .conclusion-summary {
+        font-size: 15px;
+      }
+
+      input,
+      select,
+      button,
+      summary {
+        min-height: 44px;
+      }
+
+      .section {
+        margin-top: 14px;
+      }
+
+      .conclusion-card,
+      .soft-card,
+      .koyomi-card,
+      .category-overview,
+      .month-card,
+      .next-best-card,
+      .ranking {
+        padding: 14px;
+      }
+
+      .conclusion-score {
+        width: 84px;
+        font-size: 28px;
+      }
+
+      .conclusion-body h2 {
+        font-size: 22px;
+      }
+
+      .mini-panel,
+      .category-card,
+      .ranking-item {
+        padding: 12px;
+      }
+
+      .key-name {
+        font-size: 22px;
+      }
+
+      .detail {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .month-header {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 6px;
+      }
+
+      .month-title {
+        font-size: 16px;
+      }
+
+      .month-nav {
+        padding-inline: 8px;
+        font-size: 13px;
+      }
+
+      .calendar-weekdays,
+      .calendar-grid {
+        gap: 3px;
+      }
+
+      .calendar-day {
+        min-height: 52px;
+        padding: 5px;
+        border-radius: 6px;
+      }
+
+      .calendar-date {
+        margin-bottom: 6px;
+        font-size: 12px;
+      }
+
+      .calendar-score {
+        font-size: 15px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      main {
+        padding: 12px;
+      }
+
+      .calendar-day {
+        min-height: 48px;
+        padding: 4px;
+      }
+
+      .calendar-score {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="app-header">
+      <p class="label">暦スコア</p>
+      <h1>今日を安心して始める暦</h1>
+      <p class="app-lead">日付を選ぶと、その日の暦をやさしく整理して表示します。</p>
+    </header>
+
+    <section class="section" aria-label="日付選択">
+      <label>
+        <span class="label">日付を指定</span>
+        <input id="dateInput" type="date" min="1940-01-01" max="2099-12-31">
+      </label>
+      <label>
+        <span class="label">今日やりたいこと</span>
+        <select id="purposeInput"></select>
+      </label>
+      <label id="detailPurposeField" class="is-hidden">
+        <span class="label">詳しい用途を選ぶ</span>
+        <select id="detailPurposeInput"></select>
+      </label>
+      <label class="is-hidden">
+        <span class="label">目的別カテゴリ</span>
+        <select id="categoryInput"></select>
+      </label>
+    </section>
+
+    <section class="section conclusion-card" aria-label="今日のテーマカード">
+      <div class="conclusion-score" aria-label="選択カテゴリスコア">
+        <span><span id="conclusionScore">--</span><small>/100</small></span>
+      </div>
+      <div class="conclusion-body">
+        <div>
+          <p class="date" id="date"></p>
+          <p class="label">今日のテーマ</p>
+          <h2 id="conclusionTitle">読み込み中...</h2>
+          <p class="conclusion-summary" id="conclusionSummary"></p>
+        </div>
+        <div class="conclusion-points">
+          <div class="mini-panel">
+            <p class="label">おすすめカテゴリ</p>
+            <ol class="theme-category-list" id="themeCategoryList"></ol>
+          </div>
+          <div class="mini-panel caution">
+            <p class="label" id="themeScoreLabel">選択カテゴリスコア</p>
+            <p id="themeScoreNote">--</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section koyomi-card" aria-label="今日の暦">
+      <h2 class="section-title">今日の暦</h2>
+      <div class="key-grid">
+        <div>
+          <p class="label">六曜</p>
+          <p class="key-name" id="rokuyo">--</p>
+        </div>
+        <div>
+          <p class="label">十二直</p>
+          <p class="key-name green" id="choku">--</p>
+        </div>
+        <div>
+          <p class="label">日干支</p>
+          <p class="key-name blue" id="eto">--</p>
+        </div>
+        <div>
+          <p class="label">日九星</p>
+          <p class="key-name blue" id="dayKyusei">--</p>
+        </div>
+        <div>
+          <p class="label">年九星</p>
+          <p class="key-name blue" id="yearKyusei">--</p>
+        </div>
+      </div>
+      <p class="sub" id="lunar"></p>
+      <ul class="chips" id="normalList"></ul>
+    </section>
+
+    <section class="section soft-card" aria-label="今日のおすすめ">
+      <h2 class="section-title">今日のおすすめ</h2>
+      <ul class="text-list" id="recommendList"></ul>
+    </section>
+
+    <section class="section soft-card caution" aria-label="気をつけたいこと">
+      <h2 class="section-title">気をつけたいこと</h2>
+      <ul class="text-list" id="cautionList"></ul>
+    </section>
+
+    <section class="section category-overview" aria-label="カテゴリ詳細">
+      <h2>カテゴリ詳細</h2>
+      <div class="category-grid" id="categoryOverview"></div>
+    </section>
+
+    <section class="section month-card" aria-label="月間カレンダー">
+      <div class="month-header">
+        <button class="month-nav" id="prevMonthButton" type="button" aria-label="前月">前月</button>
+        <h2 class="month-title" id="monthTitle">月間カレンダー</h2>
+        <button class="month-nav" id="nextMonthButton" type="button" aria-label="次月">次月</button>
+      </div>
+      <div class="calendar-weekdays" aria-hidden="true">
+        <span>月</span>
+        <span>火</span>
+        <span>水</span>
+        <span>木</span>
+        <span>金</span>
+        <span>土</span>
+        <span>日</span>
+      </div>
+      <div class="calendar-grid" id="monthCalendar"></div>
+    </section>
+
+    <section class="section next-best-card" aria-label="次のおすすめ日カード">
+      <div>
+        <p class="label">次のおすすめ日</p>
+        <h2 id="nextBestTitle">探しています...</h2>
+        <p class="next-best-date" id="nextBestDate"></p>
+        <p class="next-best-note" id="nextBestNote"></p>
+        <div class="next-best-factors mini-panel">
+          <p class="label">主な加点要素</p>
+          <ul class="breakdown-list" id="nextBestFactors"></ul>
+        </div>
+      </div>
+      <div class="next-best-score" aria-label="次のおすすめ日のスコア">
+        <span id="nextBestScore">--</span><small>/100</small>
+      </div>
+    </section>
+
+    <details class="section ranking" id="futureRanking">
+      <summary>未来ランキング</summary>
+      <div class="ranking-controls">
+        <label>
+          <span class="label">期間</span>
+          <select id="rankingPeriodInput">
+            <option value="30">30日</option>
+            <option value="90">90日</option>
+            <option value="180">180日</option>
+            <option value="365">365日</option>
+          </select>
+        </label>
+        <label>
+          <span class="label">ランキング種別</span>
+          <select id="rankingTypeInput">
+            <option value="best">おすすめ日</option>
+            <option value="worst">避けたい日</option>
+          </select>
+        </label>
+      </div>
+      <p class="ranking-meta" id="rankingMeta"></p>
+      <ol class="ranking-list" id="rankingList"></ol>
+    </details>
+
+    <details class="details">
+      <summary>詳細表示</summary>
+      <section class="panel">
+        <h2>詳しい暦注</h2>
+        <ul class="chips" id="detailChipList"></ul>
+      </section>
+      <section class="details">
+        <h2>判定根拠</h2>
+        <ul class="detail-list" id="detailList"></ul>
+      </section>
+    </details>
+
+    <p class="notice" id="notice">一般的な暦注をもとにした独自スコアです。流派や資料によって解釈が異なる場合があります。</p>
+    <p class="medical" id="medicalNotice">医療系の予定は、暦より体調と医療機関の判断を優先してください。</p>
+
+    <details class="debug">
+      <summary>検算用デバッグ表</summary>
+      <p class="sub" id="debugCaption"></p>
+      <div class="debug-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>日付</th>
+              <th>六曜</th>
+              <th>十二直</th>
+              <th>日干支</th>
+              <th>日九星</th>
+              <th>年九星</th>
+              <th>二十八宿</th>
+              <th>選日一覧</th>
+              <th>月齢</th>
+              <th>スコア内訳</th>
+            </tr>
+          </thead>
+          <tbody id="debugRows"></tbody>
+        </table>
+      </div>
+      <textarea id="debugCsv" readonly aria-label="検算用CSV"></textarea>
+    </details>
+  </main>
+
+  <script>
+    const MIN_DATE = "1940-01-01";
+    const MAX_DATE = "2099-12-31";
+    const MS_PER_DAY = 86400000;
+    const SYNODIC_MONTH = 29.530588853;
+
+    const categories = [
+      { id: "total", label: "総合" },
+      { id: "moneyWealth", label: "金運・財運" },
+      { id: "startContract", label: "契約・開始" },
+      { id: "healthBody", label: "健康・身体" },
+      { id: "moveTravel", label: "移動・旅行" },
+      { id: "connectPeople", label: "対人・交流" },
+      { id: "restTune", label: "休息・整え" },
+      { id: "actChallenge", label: "勝負・行動" }
+    ];
+
+    const categorySources = {
+      total: { total: 1 },
+      moneyWealth: { money: 0.65, shopping: 0.25, treat: 0.1 },
+      startContract: { contract: 0.55, work: 0.25, study: 0.1, marriage: 0.1 },
+      healthBody: { hospital: 0.35, surgery: 0.2, acupuncture: 0.2, beauty: 0.15, rest: 0.1 },
+      moveTravel: { travel: 0.55, moving: 0.25, relationship: 0.1, rest: 0.1 },
+      connectPeople: { relationship: 0.55, marriage: 0.2, work: 0.1, treat: 0.15 },
+      restTune: { rest: 0.6, beauty: 0.1, hospital: 0.1, study: 0.1, total: 0.1 },
+      actChallenge: { work: 0.45, contract: 0.25, travel: 0.1, relationship: 0.1, study: 0.1 }
+    };
+
+    const directions = {
+      start: "始める・結ぶ",
+      grow: "増やす・育てる",
+      act: "動く・勝負する",
+      connect: "人とつながる",
+      move: "移動する",
+      heal: "体を整える",
+      rest: "休む・内省する",
+      release: "手放す・終える"
+    };
+
+    const directionIcons = {
+      start: "○",
+      grow: "○",
+      act: "○",
+      connect: "○",
+      move: "○",
+      heal: "○",
+      rest: "○",
+      release: "○"
+    };
+
+    const purposeGroups = [
+      {
+        label: "はじめる・動く",
+        items: [
+          ["contract", "契約する", "start", { startContract: 0.6, actChallenge: 0.2, connectPeople: 0.1, restTune: 0.1 }],
+          ["openBusiness", "開業・申し込み", "start", { startContract: 0.55, actChallenge: 0.25, moneyWealth: 0.1, restTune: 0.1 }],
+          ["startInvesting", "投資を始める", "grow", { moneyWealth: 0.6, startContract: 0.2, restTune: 0.1, actChallenge: 0.1 }],
+          ["startDiet", "ダイエット開始", "start", { healthBody: 0.5, restTune: 0.2, actChallenge: 0.2, startContract: 0.1 }],
+          ["presentation", "プレゼン", "act", { actChallenge: 0.55, connectPeople: 0.2, startContract: 0.15, restTune: 0.1 }],
+          ["interview", "面接", "act", { actChallenge: 0.45, connectPeople: 0.3, startContract: 0.15, restTune: 0.1 }],
+          ["sales", "営業", "act", { actChallenge: 0.45, connectPeople: 0.35, startContract: 0.1, restTune: 0.1 }],
+          ["snsPost", "SNS投稿", "act", { actChallenge: 0.4, connectPeople: 0.35, startContract: 0.15, restTune: 0.1 }],
+          ["confession", "告白", "connect", { connectPeople: 0.55, actChallenge: 0.2, restTune: 0.15, startContract: 0.1 }]
+        ]
+      },
+      {
+        label: "買う・増やす",
+        items: [
+          ["bigShopping", "大きい買い物", "grow", { moneyWealth: 0.55, restTune: 0.2, startContract: 0.15, actChallenge: 0.1 }],
+          ["wallet", "財布を買う", "grow", { moneyWealth: 0.7, restTune: 0.15, startContract: 0.15 }],
+          ["lottery", "宝くじを買う", "grow", { moneyWealth: 0.65, actChallenge: 0.15, restTune: 0.2 }],
+          ["treatShopping", "ご褒美を買う", "grow", { moneyWealth: 0.4, restTune: 0.35, healthBody: 0.15, connectPeople: 0.1 }],
+          ["appliance", "家電を買う", "grow", { moneyWealth: 0.45, restTune: 0.2, startContract: 0.2, healthBody: 0.15 }],
+          ["subscribe", "サブスク加入", "start", { startContract: 0.45, moneyWealth: 0.25, restTune: 0.2, actChallenge: 0.1 }]
+        ]
+      },
+      {
+        label: "人とつながる",
+        items: [
+          ["party", "飲み会", "connect", { connectPeople: 0.6, restTune: 0.2, healthBody: 0.1, moveTravel: 0.1 }],
+          ["dinner", "会食", "connect", { connectPeople: 0.55, startContract: 0.15, restTune: 0.2, healthBody: 0.1 }],
+          ["date", "デート", "connect", { connectPeople: 0.55, restTune: 0.2, moveTravel: 0.15, moneyWealth: 0.1 }],
+          ["family", "家族と過ごす", "connect", { connectPeople: 0.45, restTune: 0.35, healthBody: 0.1, moveTravel: 0.1 }],
+          ["consult", "相談する", "connect", { connectPeople: 0.55, restTune: 0.25, startContract: 0.1, healthBody: 0.1 }],
+          ["fanActivity", "推し活", "connect", { connectPeople: 0.35, restTune: 0.3, moneyWealth: 0.2, moveTravel: 0.15 }],
+          ["offlineEvent", "オフ会・イベント", "connect", { connectPeople: 0.5, moveTravel: 0.2, actChallenge: 0.2, restTune: 0.1 }]
+        ]
+      },
+      {
+        label: "移動する・広げる",
+        items: [
+          ["travel", "旅行", "move", { moveTravel: 0.55, healthBody: 0.1, restTune: 0.2, connectPeople: 0.15 }],
+          ["businessTrip", "出張", "move", { moveTravel: 0.45, actChallenge: 0.25, startContract: 0.15, restTune: 0.15 }],
+          ["moving", "引越し", "move", { moveTravel: 0.45, startContract: 0.25, restTune: 0.2, healthBody: 0.1 }],
+          ["shrine", "神社参拝", "move", { moveTravel: 0.35, restTune: 0.35, healthBody: 0.15, connectPeople: 0.15 }],
+          ["graveVisit", "お墓参り", "move", { moveTravel: 0.35, restTune: 0.4, connectPeople: 0.15, healthBody: 0.1 }],
+          ["nature", "自然と触れ合う", "heal", { healthBody: 0.35, restTune: 0.35, moveTravel: 0.2, connectPeople: 0.1 }],
+          ["parkWalk", "公園を歩く", "heal", { healthBody: 0.4, restTune: 0.35, moveTravel: 0.15, connectPeople: 0.1 }],
+          ["onsenSauna", "温泉・サウナ", "heal", { healthBody: 0.45, restTune: 0.35, moveTravel: 0.15, connectPeople: 0.05 }]
+        ]
+      },
+      {
+        label: "体を整える",
+        items: [
+          ["injection", "注射・採血", "heal", { healthBody: 0.8, restTune: 0.2 }],
+          ["hospitalCheck", "病院・検査", "heal", { healthBody: 0.75, restTune: 0.2, moveTravel: 0.05 }],
+          ["acupuncture", "鍼灸・整体", "heal", { healthBody: 0.65, restTune: 0.25, moveTravel: 0.1 }],
+          ["haircut", "美容院", "heal", { healthBody: 0.35, restTune: 0.3, connectPeople: 0.2, moneyWealth: 0.15 }],
+          ["beauty", "美容・エステ", "heal", { healthBody: 0.45, restTune: 0.35, moneyWealth: 0.1, connectPeople: 0.1 }],
+          ["gym", "ジム・運動", "act", { healthBody: 0.45, actChallenge: 0.25, restTune: 0.2, startContract: 0.1 }]
+        ]
+      },
+      {
+        label: "手放す・整理する",
+        items: [
+          ["declutter", "捨て活", "release", { restTune: 0.35, startContract: -0.1, healthBody: 0.15, actChallenge: 0.1 }],
+          ["cleanRoom", "お部屋の片付け", "release", { restTune: 0.45, healthBody: 0.15, actChallenge: 0.15, moveTravel: 0.05 }],
+          ["cancelContract", "契約破棄", "release", { startContract: 0.35, restTune: 0.35, actChallenge: 0.15, connectPeople: 0.15 }],
+          ["unsubscribe", "サブスク解約", "release", { moneyWealth: 0.25, restTune: 0.4, startContract: 0.2, actChallenge: 0.15 }],
+          ["snsCleanup", "SNS整理", "release", { restTune: 0.45, connectPeople: 0.25, actChallenge: 0.15, healthBody: 0.15 }],
+          ["dataCleanup", "データ整理", "release", { restTune: 0.5, actChallenge: 0.15, startContract: 0.15, healthBody: 0.2 }],
+          ["relationshipCleanup", "人間関係の整理", "release", { connectPeople: 0.35, restTune: 0.4, healthBody: 0.15, actChallenge: 0.1 }],
+          ["purify", "厄落とし・浄化", "release", { restTune: 0.45, healthBody: 0.2, moveTravel: 0.2, connectPeople: 0.15 }]
+        ]
+      },
+      {
+        label: "休む・整える",
+        items: [
+          ["relax", "のんびり過ごす", "rest", { restTune: 0.7, healthBody: 0.2, connectPeople: 0.1 }],
+          ["futon", "おふとんで休む", "rest", { restTune: 0.75, healthBody: 0.25 }],
+          ["journal", "日記を書く", "rest", { restTune: 0.6, healthBody: 0.1, startContract: 0.1, actChallenge: 0.1 }],
+          ["feelings", "気持ちを整理する", "rest", { restTune: 0.65, healthBody: 0.2, connectPeople: 0.15 }],
+          ["cafe", "カフェでのんびり", "rest", { restTune: 0.5, connectPeople: 0.15, moneyWealth: 0.1, moveTravel: 0.25 }],
+          ["creativeWriting", "創作・執筆", "rest", { restTune: 0.35, actChallenge: 0.25, startContract: 0.2, healthBody: 0.2 }],
+          ["cleaning", "掃除・整頓", "release", { restTune: 0.5, healthBody: 0.2, actChallenge: 0.15, startContract: 0.15 }],
+          ["aloneTime", "一人時間を過ごす", "rest", { restTune: 0.75, healthBody: 0.15, connectPeople: 0.1 }]
+        ]
+      }
+    ];
+
+    const totalPurpose = { id: "total", label: "総合", direction: null, categoryWeights: { total: 1 }, group: "よく使う用途" };
+    const purposeTemplates = [
+      totalPurpose,
+      ...purposeGroups.flatMap(group => group.items.map(([id, label, direction, categoryWeights]) => ({ id, label, direction, categoryWeights, group: group.label })))
+    ];
+    const featuredPurposeIds = [
+      "total",
+      "relax",
+      "contract",
+      "travel",
+      "moving",
+      "bigShopping",
+      "wallet",
+      "injection",
+      "hospitalCheck",
+      "acupuncture",
+      "beauty",
+      "declutter",
+      "cleanRoom",
+      "journal"
+    ];
+
+    const overviewPurposeItems = [
+      { id: "total", label: "総合", theme: "flow" },
+      { id: "cleanRoom", label: "掃除・片付け", theme: "arrange" },
+      { id: "relax", label: "休息・整え", theme: "rest" },
+      { id: "creativeWriting", label: "学習・情報整理", theme: "learn" },
+      { id: "presentation", label: "仕事・発表", theme: "send" },
+      { id: "contract", label: "契約・開始", theme: "challenge" },
+      { id: "bigShopping", label: "大きい買い物・投資", theme: "money" },
+      { id: "businessTrip", label: "出張", theme: "act" },
+      { id: "travel", label: "旅行", theme: "act" },
+      { id: "hospitalCheck", label: "病院・検査", theme: "rest" },
+      { id: "beauty", label: "美容・エステ", theme: "arrange" },
+      { id: "party", label: "人と会う", theme: "connect" }
+    ];
+
+    const medicalCategoryIds = ["healthBody"];
+    const medicalPurposeIds = ["injection", "hospitalCheck", "acupuncture"];
+    const stems = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+    const branches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+    const rokuyoNames = ["大安", "赤口", "先勝", "友引", "先負", "仏滅"];
+    const chokuNames = ["建", "除", "満", "平", "定", "執", "破", "危", "成", "納", "開", "閉"];
+    const shukuNames = ["角", "亢", "氐", "房", "心", "尾", "箕", "斗", "牛", "女", "虚", "危", "室", "壁", "奎", "婁", "胃", "昴", "畢", "觜", "参", "井", "鬼", "柳", "星", "張", "翼", "軫"];
+    const kyuseiNames = ["一白水星", "二黒土星", "三碧木星", "四緑木星", "五黄土星", "六白金星", "七赤金星", "八白土星", "九紫火星"];
+
+    const monthParts = {
+      "正": 1, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
+      "六": 6, "七": 7, "八": 8, "九": 9, "十": 10,
+      "十一": 11, "十二": 12
+    };
+
+    const baseRules = {
+      "大安": { kind: "good", text: "万事に吉とされる日。", weights: { total: 8, contract: 10, marriage: 12, moving: 7, shopping: 5 } },
+      "友引": { kind: "good", text: "人との縁や共有に向く日。", weights: { total: 5, relationship: 12, marriage: 8, work: 4 } },
+      "先勝": { kind: "neutral", text: "早めの行動が吉とされる日。", weights: { total: 4, work: 7, contract: 4, travel: 3 } },
+      "先負": { kind: "neutral", text: "急がず控えめに整える日。", weights: { total: 0, rest: 5, hospital: 2, work: -2 } },
+      "赤口": { kind: "warn", text: "火や刃物、慌ただしさに注意。", weights: { total: -5, surgery: -10, acupuncture: -5, contract: -4 } },
+      "仏滅": { kind: "warn", text: "大きな決定より整理ややり直し向き。", weights: { total: -7, marriage: -12, contract: -8, moving: -7, rest: 5 } },
+      "建": { kind: "good", text: "新規開始に向く日。", weights: { total: 7, work: 8, contract: 7, study: 5 } },
+      "除": { kind: "good", text: "取り除く、整えることに向く日。", weights: { total: 3, hospital: 6, acupuncture: 5, beauty: 4, rest: 4 } },
+      "満": { kind: "good", text: "満ちる、祝いごとに向く日。", weights: { total: 8, marriage: 9, money: 5, treat: 6 } },
+      "平": { kind: "neutral", text: "穏やかに平らかに進める日。", weights: { total: 4, relationship: 5, travel: 4 } },
+      "定": { kind: "good", text: "定める、約束することに向く日。", weights: { total: 7, contract: 9, marriage: 6, work: 4 } },
+      "執": { kind: "neutral", text: "守る、続けることに向く日。", weights: { total: 3, work: 4, study: 4, rest: 2 } },
+      "破": { kind: "warn", text: "破れる意味を持ち、強引な変更は注意。", weights: { total: -10, contract: -9, marriage: -8, moving: -10 } },
+      "危": { kind: "warn", text: "慎重確認が必要な日。", weights: { total: -6, travel: -8, surgery: -8, work: -3 } },
+      "成": { kind: "good", text: "物事が成る日。", weights: { total: 9, work: 8, contract: 7, study: 6, money: 5 } },
+      "納": { kind: "neutral", text: "納める、受け取る、整理する日。", weights: { total: 4, money: 5, shopping: 4, rest: 4 } },
+      "開": { kind: "good", text: "開く、広げることに向く日。", weights: { total: 9, work: 7, travel: 8, relationship: 6, shopping: 5 } },
+      "閉": { kind: "warn", text: "閉じる、内側を整える日。", weights: { total: -4, rest: 7, contract: -5, travel: -4 } }
+    };
+
+    const extraRules = {
+      "一粒万倍日": { kind: "good", text: "小さな行動が大きく育つとされる日。", weights: { total: 12, money: 14, work: 9, contract: 8, shopping: 8, study: 6 } },
+      "天赦日": { kind: "good", text: "天が万物を赦す大吉日とされる日。", weights: { total: 18, contract: 18, marriage: 20, moving: 14, work: 13, money: 10 } },
+      "寅の日": { kind: "good", text: "出ていったものが戻るとされ、金運や旅に向く日。", weights: { total: 5, money: 10, travel: 8, shopping: 5 } },
+      "巳の日": { kind: "good", text: "財運や芸事の願いに縁があるとされる日。", weights: { total: 5, money: 9, beauty: 5, treat: 4 } },
+      "己巳の日": { kind: "good", text: "巳の日の中でも金運の意味が強い日。", weights: { total: 8, money: 14, shopping: 6, treat: 5 } },
+      "神吉日": { kind: "good", text: "神社参拝や祈願に良いとされる日。", weights: { total: 3, relationship: 4, travel: 3, rest: 3 } },
+      "不成就日": { kind: "warn", text: "物事が成就しにくいとされる日。", weights: { total: -12, contract: -11, marriage: -12, work: -6, moving: -8 } },
+      "三隣亡": { kind: "warn", text: "建築や移転に注意とされる日。", weights: { total: -5, moving: -14, contract: -5 } },
+      "凶会日": { kind: "warn", text: "物事の重なりに注意とされる日。", weights: { total: -4, contract: -6, travel: -5, surgery: -5 } },
+      "天一天上": { kind: "good", text: "方角の障りが和らぐ期間とされる日。", weights: { total: 4, travel: 7, moving: 6, relationship: 3 } },
+      "十方暮": { kind: "warn", text: "天地の気が合いにくい期間とされる日。", weights: { total: -6, contract: -5, relationship: -4, travel: -4 } },
+      "八専": { kind: "warn", text: "同じ気が重なり、偏りに注意とされる期間。", weights: { total: -4, relationship: -4, work: -3 } },
+      "八専（間日）": { kind: "neutral", text: "八専期間中の間日。八専の作用が弱まる日として扱います。", weights: { total: -1, relationship: -1, work: -1 } },
+      "土用": { kind: "warn", text: "季節の変わり目。土に関わる作業や無理に注意。", weights: { total: -5, moving: -8, hospital: -3, surgery: -4, rest: 6 } },
+      "土用（間日）": { kind: "neutral", text: "土用期間中の間日。土用の慎重さを少し軽めに見ます。", weights: { total: -1, moving: -2, rest: 3 } },
+      "月破": { kind: "warn", text: "月の気と日支がぶつかるとされる注意日。", weights: { total: -10, contract: -8, travel: -7, marriage: -7, surgery: -6 } },
+      "血忌日": { kind: "warn", text: "血に関わることを忌むとされる暦注下段。", weights: { total: -4, surgery: -8, acupuncture: -5 } },
+      "狼籍日": { kind: "warn", text: "三箇の悪日のひとつ。荒れやすい日として扱います。", weights: { total: -5, contract: -4, relationship: -4 } },
+      "大土": { kind: "warn", text: "大犯土。土を動かすことを忌む期間とされます。", weights: { total: -4, moving: -7 } },
+      "小土": { kind: "warn", text: "小犯土。土を動かすことを忌む期間とされます。", weights: { total: -3, moving: -6 } },
+      "帰忌日": { kind: "warn", text: "帰宅や遠出、移動に注意とされる暦注下段。", weights: { total: -4, travel: -7, moving: -4 } },
+      "天恩日": { kind: "good", text: "天の恩恵を受ける吉日。祝い事などに良いとされます。", weights: { total: 4, marriage: 5, relationship: 4, treat: 3 } },
+      "母倉日": { kind: "good", text: "天が人を慈しむ日。特に婚礼に良いとされます。", weights: { total: 5, marriage: 8, relationship: 5, moving: 3 } },
+      "大明日": { kind: "good", text: "天地が明るく照らされる大吉日。建築、婚礼、旅行に良いとされます。", weights: { total: 6, marriage: 7, travel: 6, moving: 5 } },
+      "甲子の日": { kind: "good", text: "六十干支の始まりの日。物事を始める節目として扱います。", weights: { total: 7, work: 5, study: 5, money: 4 } },
+      "月徳日": { kind: "good", text: "月の徳を得る吉日。建築や土木に良いとされます。", weights: { total: 6, moving: 5, work: 3 } },
+      "受死日": { kind: "warn", text: "黒日とも呼ばれる大凶日。葬儀以外は避けるとされます。", weights: { total: -14, marriage: -12, contract: -10, surgery: -8 } },
+      "十死日": { kind: "warn", text: "受死日に次ぐ凶日。葬儀も避けるべきとされます。", weights: { total: -10, marriage: -8, contract: -7, surgery: -7 } }
+    };
+
+    const normalDisplayNames = new Set(["大安", "赤口", "先勝", "友引", "先負", "仏滅", "建", "除", "満", "平", "定", "執", "破", "危", "成", "納", "開", "閉", "一粒万倍日", "天赦日", "不成就日", "寅の日", "巳の日", "己巳の日", "天一天上", "土用", "土用（間日）", "月破", "三隣亡", "天恩日", "母倉日", "大明日", "甲子の日"]);
+    const detailDisplayNames = new Set(["神吉日", "凶会日", "血忌日", "狼籍日", "大土", "小土", "帰忌日", "月徳日", "受死日", "十死日", "八専", "八専（間日）"]);
+    const directionAffinities = {
+      "大安": { start: 2, grow: 1, connect: 1 },
+      "友引": { connect: 3, start: 1 },
+      "先勝": { act: 2, start: 1 },
+      "先負": { rest: 2, heal: 1 },
+      "赤口": { act: -1, heal: -2 },
+      "仏滅": { rest: 2, release: 2, start: -2 },
+      "建": { start: 3, act: 2 },
+      "除": { release: 3, heal: 2 },
+      "満": { grow: 3, connect: 2 },
+      "平": { connect: 1, rest: 1 },
+      "定": { start: 2, connect: 1 },
+      "執": { rest: 1, grow: 1 },
+      "破": { release: 2, start: -3, grow: -2 },
+      "危": { move: -2, act: -1 },
+      "成": { grow: 3, act: 1 },
+      "納": { release: 1, rest: 2, grow: 1 },
+      "開": { start: 2, move: 2, connect: 1 },
+      "閉": { release: 3, rest: 2, start: -2, grow: -2 },
+      "一粒万倍日": { start: 3, grow: 3, release: -2 },
+      "天赦日": { start: 4, act: 2, release: 1 },
+      "寅の日": { grow: 2, move: 2 },
+      "巳の日": { grow: 2, heal: 1 },
+      "己巳の日": { grow: 3, heal: 1 },
+      "甲子の日": { start: 3, grow: 1 },
+      "天一天上": { move: 3, connect: 1 },
+      "土用": { rest: 2, heal: 1, move: -2, act: -1 },
+      "土用（間日）": { rest: 1 },
+      "月破": { start: -2, move: -2, connect: -1 },
+      "大明日": { move: 2, start: 1, connect: 1 },
+      "母倉日": { connect: 2, heal: 1 },
+      "天恩日": { connect: 1, rest: 1 },
+      "不成就日": { start: -3, grow: -2, act: -1 },
+      "受死日": { start: -4, act: -3, heal: -2, rest: 2 },
+      "十死日": { start: -3, act: -2, heal: -2, rest: 1 },
+      "血忌日": { heal: -3 },
+      "三隣亡": { move: -4, start: -2 },
+      "帰忌日": { move: -3, rest: 1 },
+      "八専": { connect: -2, act: -1, rest: 1 },
+      "八専（間日）": { rest: 1 }
+    };
+
+    const solarTerms = [
+      { name: "小寒", month: 1, day: 5, target: 285, branch: 1 },
+      { name: "大寒", month: 1, day: 20, target: 300 },
+      { name: "立春", month: 2, day: 4, target: 315, branch: 2 },
+      { name: "雨水", month: 2, day: 19, target: 330 },
+      { name: "啓蟄", month: 3, day: 5, target: 345, branch: 3 },
+      { name: "春分", month: 3, day: 20, target: 0 },
+      { name: "清明", month: 4, day: 4, target: 15, branch: 4 },
+      { name: "穀雨", month: 4, day: 20, target: 30 },
+      { name: "立夏", month: 5, day: 5, target: 45, branch: 5 },
+      { name: "小満", month: 5, day: 21, target: 60 },
+      { name: "芒種", month: 6, day: 5, target: 75, branch: 6 },
+      { name: "夏至", month: 6, day: 21, target: 90 },
+      { name: "小暑", month: 7, day: 7, target: 105, branch: 7 },
+      { name: "大暑", month: 7, day: 23, target: 120 },
+      { name: "立秋", month: 8, day: 7, target: 135, branch: 8 },
+      { name: "処暑", month: 8, day: 23, target: 150 },
+      { name: "白露", month: 9, day: 7, target: 165, branch: 9 },
+      { name: "秋分", month: 9, day: 23, target: 180 },
+      { name: "寒露", month: 10, day: 8, target: 195, branch: 10 },
+      { name: "霜降", month: 10, day: 23, target: 210 },
+      { name: "立冬", month: 11, day: 7, target: 225, branch: 11 },
+      { name: "小雪", month: 11, day: 22, target: 240 },
+      { name: "大雪", month: 12, day: 7, target: 255, branch: 0 },
+      { name: "冬至", month: 12, day: 22, target: 270 }
+    ];
+
+    const ichiryumanbaiBranches = {
+      2: [1, 6], 3: [2, 9], 4: [0, 3], 5: [3, 4],
+      6: [5, 6], 7: [6, 9], 8: [0, 7], 9: [3, 8],
+      10: [6, 9], 11: [9, 10], 0: [0, 11], 1: [0, 3]
+    };
+
+    const fujobijuDays = {
+      1: [3, 11, 19, 27], 7: [3, 11, 19, 27],
+      2: [2, 10, 18, 26], 8: [2, 10, 18, 26],
+      3: [1, 9, 17, 25], 9: [1, 9, 17, 25],
+      4: [4, 12, 20, 28], 10: [4, 12, 20, 28],
+      5: [5, 13, 21, 29], 11: [5, 13, 21, 29],
+      6: [6, 14, 22, 30], 12: [6, 14, 22, 30]
+    };
+
+    const sanrinboBranches = {
+      2: 11, 5: 11, 8: 11, 11: 11,
+      3: 2, 6: 2, 9: 2, 0: 2,
+      4: 6, 7: 6, 10: 6, 1: 6
+    };
+
+    const shinkichiIndexes = new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 23, 24, 25, 26, 27, 30, 33, 35, 36, 37, 39, 40, 42, 43, 45, 48, 51, 52, 54, 55, 57, 58, 59]);
+    const tennonNames = new Set(["甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己卯", "庚辰", "辛巳", "壬午", "癸未", "己酉", "庚戌", "辛亥", "壬子", "癸丑"]);
+    const daimyoNames = new Set(["己巳", "庚午", "辛未", "壬申", "癸酉", "丁丑", "己卯", "壬午", "甲申", "丁亥", "壬辰", "乙未", "壬寅", "甲辰", "乙巳", "丙午", "丁未", "己酉", "庚戌", "辛亥", "丙辰", "戊午", "己未", "庚申", "辛酉"]);
+    const bloodAvoidBranches = [1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 0];
+    const kikobiBranches = [1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0];
+    const roujakuBranches = [0, 3, 6, 9, 0, 3, 6, 9, 0, 3, 6, 9];
+    const hassenMabiIndexes = new Set([49, 52, 54, 58]);
+    const doyoMabiBranchesByTerm = {
+      "立春": [2, 3, 5],
+      "立夏": [5, 6, 9],
+      "立秋": [3, 4, 8],
+      "立冬": [7, 9, 11]
+    };
+    const gettokuStems = [2, 0, 8, 6, 2, 0, 8, 6, 2, 0, 8, 6];
+    const jushibiBranches = [10, 4, 11, 5, 0, 6, 1, 7, 2, 8, 3, 9];
+    const jisshibiBranches = [9, 5, 1, 9, 5, 1, 9, 5, 1, 9, 5, 1];
+    const bosonichiBranchesByMonth = {
+      1: [0, 11], 2: [0, 11],
+      3: [5, 6], 6: [5, 6], 9: [5, 6], 12: [5, 6],
+      4: [2, 3], 5: [2, 3],
+      7: [1, 4, 7, 10], 8: [1, 4, 7, 10],
+      10: [8, 9], 11: [8, 9]
+    };
+
+    const debugDates2026 = [
+      "2026-01-01", "2026-01-06", "2026-02-04", "2026-02-17",
+      "2026-03-05", "2026-03-20", "2026-04-04", "2026-04-17",
+      "2026-05-05", "2026-05-24", "2026-06-05", "2026-06-21",
+      "2026-07-07", "2026-07-20", "2026-08-07", "2026-09-23",
+      "2026-10-08", "2026-11-07", "2026-12-07", "2026-12-22"
+    ];
+
+    const verificationResults = {
+      "2026-01-01": {
+        memo: "参照: 日暦 https://higoyo.me/y26m1d1/ / 暦職人 https://koyomishokunin.com/20260101_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/1/1/2026 。選日は外部が一粒万倍日・不成就日・大土/大犯土、アプリは神吉日を余分に含む。",
+        fields: {
+          rokuyo: { external: "大安", judgment: "OK" },
+          choku: { external: "閉", judgment: "OK" },
+          eto: { external: "乙亥", judgment: "OK" },
+          kyusei: { external: "三碧木星", judgment: "OK" },
+          shuku: { external: "井", judgment: "OK" },
+          senjitsu: { external: "一粒万倍日 / 不成就日 / 大土（大犯土）", judgment: "NG" }
+        }
+      },
+      "2026-03-05": {
+        memo: "参照: 日暦 https://higoyo.me/y26m3d5/ / 暦職人 https://koyomishokunin.com/20260305_koyomi/ / mykoyomi https://www.mykoyomi.com/days/2026-03-05/ / 計算サイト https://www.calc-site.com/search_dates/3/5/2026 。九星は日家九星で照合。選日は外部が天赦日・一粒万倍日・寅の日・三隣亡・小土/小犯土・帰忌日、アプリは神吉日を余分に含む。",
+        fields: {
+          rokuyo: { external: "大安", judgment: "OK" },
+          choku: { external: "閉", judgment: "OK" },
+          eto: { external: "戊寅", judgment: "OK" },
+          kyusei: { external: "三碧木星", judgment: "OK" },
+          shuku: { external: "角", judgment: "OK" },
+          senjitsu: { external: "天赦日 / 一粒万倍日 / 寅の日 / 三隣亡 / 小土（小犯土） / 帰忌日", judgment: "NG" }
+        }
+      },
+      "2026-05-24": {
+        memo: "参照: 日暦 https://higoyo.me/y26m5d24/ / 暦職人 https://koyomishokunin.com/20260524_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/5/24/2026 。主要項目は一致。",
+        fields: {
+          rokuyo: { external: "大安", judgment: "OK" },
+          choku: { external: "執", judgment: "OK" },
+          eto: { external: "戊戌", judgment: "OK" },
+          kyusei: { external: "二黒土星", judgment: "OK" },
+          shuku: { external: "星", judgment: "OK" },
+          senjitsu: { external: "天一天上", judgment: "OK" }
+        }
+      },
+      "2026-12-22": {
+        memo: "参照: 暦職人 https://koyomishokunin.com/20261222_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/12/22/2026 / 便利ジャパン https://www.benri.jp/calendar/etomonth/?month=12&year=2026 。九星は日家九星で照合。選日は外部が大土・神吉日・血忌日・天火日・狼籍日、アプリは凶会日と月破を余分に含み天火日を未収録。",
+        fields: {
+          rokuyo: { external: "赤口", judgment: "OK" },
+          choku: { external: "破", judgment: "OK" },
+          eto: { external: "庚午", judgment: "OK" },
+          kyusei: { external: "七赤金星", judgment: "OK" },
+          shuku: { external: "室", judgment: "OK" },
+          senjitsu: { external: "大土 / 神吉日 / 血忌日 / 天火日 / 狼籍日", judgment: "NG" }
+        }
+      }
+    };
+
+    function pad(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function dateToInputValue(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function parseInputDate(value) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+      const [year, month, day] = value.split("-").map(Number);
+      const date = new Date(year, month - 1, day);
+      if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+      return date;
+    }
+
+    function formatDate(date) {
+      return new Intl.DateTimeFormat("ja-JP", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long"
+      }).format(date);
+    }
+
+    function inSupportedRange(value) {
+      return value >= MIN_DATE && value <= MAX_DATE;
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function addDays(date, days) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+    }
+
+    function daysBetween(a, b) {
+      const one = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+      const two = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+      return Math.round((one - two) / MS_PER_DAY);
+    }
+
+    function julianDayNumber(date) {
+      let year = date.getFullYear();
+      let month = date.getMonth() + 1;
+      const day = date.getDate();
+      if (month <= 2) {
+        year -= 1;
+        month += 12;
+      }
+      const a = Math.floor(year / 100);
+      const b = 2 - a + Math.floor(a / 4);
+      return Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + b - 1524;
+    }
+
+    function sexagenary(date) {
+      const jdn = julianDayNumber(date);
+      const stem = (jdn + 9) % 10;
+      const branch = (jdn + 1) % 12;
+      const index = (jdn + 49) % 60;
+      return { stem, branch, index, name: `${stems[stem]}${branches[branch]}` };
+    }
+
+    function getLunarDate(date) {
+      if (!Intl.DateTimeFormat.supportedLocalesOf("ja-JP-u-ca-chinese").length) return null;
+      try {
+        const parts = new Intl.DateTimeFormat("ja-JP-u-ca-chinese", {
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        }).formatToParts(date);
+        const monthText = parts.find(part => part.type === "month")?.value;
+        const dayText = parts.find(part => part.type === "day")?.value;
+        if (!monthText || !dayText) return null;
+        const isLeap = monthText.includes("閏");
+        const month = monthParts[monthText.replace("閏", "").replace("月", "")];
+        const day = Number(dayText);
+        if (!month || !day) return null;
+        return { month, day, isLeap };
+      } catch {
+        return null;
+      }
+    }
+
+    function normalizeDegrees(degrees) {
+      return ((degrees % 360) + 360) % 360;
+    }
+
+    function signedAngle(from, to) {
+      return ((from - to + 540) % 360) - 180;
+    }
+
+    function solarLongitude(ms) {
+      const jd = ms / MS_PER_DAY + 2440587.5;
+      const t = (jd - 2451545.0) / 36525;
+      const l0 = normalizeDegrees(280.46646 + 36000.76983 * t + 0.0003032 * t * t);
+      const m = normalizeDegrees(357.52911 + 35999.05029 * t - 0.0001537 * t * t);
+      const mr = m * Math.PI / 180;
+      const c = (1.914602 - 0.004817 * t - 0.000014 * t * t) * Math.sin(mr)
+        + (0.019993 - 0.000101 * t) * Math.sin(2 * mr)
+        + 0.000289 * Math.sin(3 * mr);
+      return normalizeDegrees(l0 + c);
+    }
+
+    function solarTermDateJst(year, term) {
+      let low = Date.UTC(year, term.month - 1, term.day - 3, 0, 0, 0);
+      let high = Date.UTC(year, term.month - 1, term.day + 4, 0, 0, 0);
+      for (let i = 0; i < 60; i += 1) {
+        const mid = (low + high) / 2;
+        if (signedAngle(solarLongitude(mid), term.target) < 0) low = mid;
+        else high = mid;
+      }
+      const jst = new Date(high + 9 * 60 * 60 * 1000);
+      return new Date(jst.getUTCFullYear(), jst.getUTCMonth(), jst.getUTCDate());
+    }
+
+    function getTermBoundaries(year) {
+      return [
+        ...solarTerms.map(term => ({ ...term, date: solarTermDateJst(year, term) })),
+        ...solarTerms.filter(term => term.month === 12).map(term => ({ ...term, date: solarTermDateJst(year - 1, term) })),
+        ...solarTerms.filter(term => term.month === 1).map(term => ({ ...term, date: solarTermDateJst(year + 1, term) }))
+      ].sort((a, b) => a.date - b.date);
+    }
+
+    function getSolarInfo(date) {
+      const boundaries = getTermBoundaries(date.getFullYear());
+      let currentTerm = boundaries[0];
+      let monthBoundary = boundaries.find(item => item.branch !== undefined) || boundaries[0];
+      for (const boundary of boundaries) {
+        if (boundary.date <= date) {
+          currentTerm = boundary;
+          if (boundary.branch !== undefined) monthBoundary = boundary;
+        }
+      }
+      return { currentTerm, monthBoundary };
+    }
+
+    function getRokuyo(lunar) {
+      return rokuyoNames[(lunar.month + lunar.day) % 6];
+    }
+
+    function getChoku(dayBranch, monthBranch) {
+      return chokuNames[(dayBranch - monthBranch + 12) % 12];
+    }
+
+    function getYearKyusei(date) {
+      const year = date.getFullYear();
+      const value = dateToInputValue(date);
+      const spring = dateToInputValue(solarTermDateJst(year, solarTerms.find(term => term.name === "立春")));
+      const kyuseiYear = value < spring ? year - 1 : year;
+      return kyuseiNames[((11 - kyuseiYear) % 9 + 9) % 9];
+    }
+
+    function nearestKoshiDate(termDate) {
+      let nearest = null;
+      for (let offset = -30; offset <= 30; offset += 1) {
+        const date = addDays(termDate, offset);
+        if (sexagenary(date).index !== 0) continue;
+        const distance = Math.abs(offset);
+        if (!nearest || distance < nearest.distance) {
+          nearest = { date, distance };
+        }
+      }
+      return nearest.date;
+    }
+
+    function getDayKyusei(date) {
+      const year = date.getFullYear();
+      const switches = [];
+      for (const targetYear of [year - 1, year, year + 1]) {
+        switches.push({
+          date: nearestKoshiDate(solarTermDateJst(targetYear, solarTerms.find(term => term.name === "夏至"))),
+          mode: "in"
+        });
+        switches.push({
+          date: nearestKoshiDate(solarTermDateJst(targetYear, solarTerms.find(term => term.name === "冬至"))),
+          mode: "yo"
+        });
+      }
+      switches.sort((a, b) => a.date - b.date);
+
+      let current = switches[0];
+      for (const point of switches) {
+        if (point.date <= date) current = point;
+      }
+
+      const elapsed = ((daysBetween(date, current.date) % 9) + 9) % 9;
+      const index = current.mode === "yo" ? elapsed : (8 - elapsed + 9) % 9;
+      return kyuseiNames[index];
+    }
+
+    function getMoonAge(date) {
+      const knownNewMoon = Date.UTC(2000, 0, 6, 18, 14, 0);
+      const noonUtc = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+      return ((noonUtc - knownNewMoon) / MS_PER_DAY % SYNODIC_MONTH + SYNODIC_MONTH) % SYNODIC_MONTH;
+    }
+
+    function getShuku(date) {
+      return shukuNames[(julianDayNumber(date) + 11) % 28];
+    }
+
+    function getSeason(monthBranch) {
+      if ([2, 3, 4].includes(monthBranch)) return "spring";
+      if ([5, 6, 7].includes(monthBranch)) return "summer";
+      if ([8, 9, 10].includes(monthBranch)) return "autumn";
+      return "winter";
+    }
+
+    function collectExtraNotes(date, lunar, eto, monthBranch, terms) {
+      const notes = [];
+      const branch = eto.branch;
+      const stem = eto.stem;
+      const season = getSeason(monthBranch);
+      const solarMonth = ((monthBranch - 2 + 12) % 12) + 1;
+
+      if (ichiryumanbaiBranches[monthBranch]?.includes(branch)) notes.push("一粒万倍日");
+      if ((season === "spring" && eto.name === "戊寅")
+        || (season === "summer" && eto.name === "甲午")
+        || (season === "autumn" && eto.name === "戊申")
+        || (season === "winter" && eto.name === "甲子")) notes.push("天赦日");
+      if (eto.name === "甲子") notes.push("甲子の日");
+      if (branch === 2) notes.push("寅の日");
+      if (branch === 5) notes.push(stem === 5 ? "己巳の日" : "巳の日");
+      if (tennonNames.has(eto.name)) notes.push("天恩日");
+      if (daimyoNames.has(eto.name)) notes.push("大明日");
+      if (bosonichiBranchesByMonth[solarMonth]?.includes(branch)) notes.push("母倉日");
+      if (shinkichiIndexes.has(eto.index)) notes.push("神吉日");
+      if (fujobijuDays[lunar.month]?.includes(lunar.day)) notes.push("不成就日");
+      if (sanrinboBranches[monthBranch] === branch) notes.push("三隣亡");
+      if ((monthBranch + branch) % 6 === 0) notes.push("凶会日");
+      if (gettokuStems[solarMonth - 1] === stem) notes.push("月徳日");
+      if (jushibiBranches[solarMonth - 1] === branch) notes.push("受死日");
+      if (jisshibiBranches[solarMonth - 1] === branch) notes.push("十死日");
+      if (bloodAvoidBranches[solarMonth - 1] === branch) notes.push("血忌日");
+      if (kikobiBranches[solarMonth - 1] === branch) notes.push("帰忌日");
+      if (roujakuBranches[solarMonth - 1] === branch) notes.push("狼籍日");
+      if (eto.index >= 6 && eto.index <= 12) notes.push("大土");
+      if (eto.index >= 14 && eto.index <= 20) notes.push("小土");
+      if (eto.index >= 29 && eto.index <= 44) notes.push("天一天上");
+      if (eto.index >= 20 && eto.index <= 29) notes.push("十方暮");
+      if (eto.index >= 48 && eto.index <= 59) {
+        notes.push(hassenMabiIndexes.has(eto.index) ? "八専（間日）" : "八専");
+      }
+      if ((branch + 6) % 12 === monthBranch) notes.push("月破");
+
+      const doyoTerms = ["立春", "立夏", "立秋", "立冬"];
+      const doyo = getTermBoundaries(date.getFullYear()).find(term => {
+        if (!doyoTerms.includes(term.name)) return false;
+        const start = addDays(term.date, -18);
+        return date >= start && date < term.date;
+      });
+      if (doyo) {
+        const isMabi = doyoMabiBranchesByTerm[doyo.name]?.includes(branch);
+        notes.push(isMabi ? "土用（間日）" : "土用");
+      }
+
+      return [...new Set(notes)].map(name => ({ name, ...extraRules[name], group: "選日・期間" }));
+    }
+
+    function buildNotes(date) {
+      const lunar = getLunarDate(date);
+      if (!lunar) return null;
+      const eto = sexagenary(date);
+      const solar = getSolarInfo(date);
+      const monthBranch = solar.monthBoundary.branch;
+      const rokuyo = getRokuyo(lunar);
+      const choku = getChoku(eto.branch, monthBranch);
+      const dayKyusei = getDayKyusei(date);
+      const yearKyusei = getYearKyusei(date);
+      const shuku = getShuku(date);
+      const moonAge = getMoonAge(date);
+
+      const notes = [
+        { name: rokuyo, group: "六曜", ...baseRules[rokuyo] },
+        { name: choku, group: "十二直", ...baseRules[choku] },
+        { name: shuku, group: "二十八宿", kind: "neutral", text: "日々巡る二十八宿。細かな日柄の補助情報です。", weights: { total: 1 } },
+        { name: eto.name, group: "日干支", kind: "neutral", text: "その日の干支。選日や月破などの判定にも使います。", weights: { total: 0 } },
+        { name: dayKyusei, group: "日九星", kind: "neutral", text: "その日の九星。日々の暦サイトとの照合対象です。", weights: { total: 0 } },
+        { name: yearKyusei, group: "年九星", kind: "neutral", text: "立春を年替わりとする年の九星。補助情報として扱います。", weights: { total: 0 } },
+        { name: solar.currentTerm.name, group: "二十四節気", kind: "neutral", text: "季節の節目。コメントや体調管理の背景情報です。", weights: { rest: 2, hospital: 1 } },
+        { name: `月齢${moonAge.toFixed(1)}`, group: "月齢", kind: "neutral", text: moonAge < 2 ? "新月期。始まりや整え直しを意識しやすい頃。" : moonAge > 13 && moonAge < 17 ? "満月期。気分や予定が満ちやすい頃。" : "月の満ち欠けの参考情報です。", weights: moonAge < 2 ? { total: 1, rest: 3, study: 2 } : moonAge > 13 && moonAge < 17 ? { treat: 3, relationship: 2 } : { total: 0 } },
+        ...collectExtraNotes(date, lunar, eto, monthBranch, solar.currentTerm)
+      ];
+
+      return { lunar, eto, monthBranch, rokuyo, choku, kyusei: dayKyusei, dayKyusei, yearKyusei, shuku, moonAge, solar, notes };
+    }
+
+    function scoreForCategory(notes, categoryId) {
+      return clamp(60 + notes.reduce((sum, note) => {
+        return sum + contributionForCategory(note, categoryId);
+      }, 0), 0, 100);
+    }
+
+    function contributionForCategory(note, categoryId) {
+      const weights = note.weights || {};
+      if (weights[categoryId] !== undefined) return weights[categoryId];
+      const sources = categorySources[categoryId] || { total: 1 };
+      return Object.entries(sources).reduce((sum, [sourceId, ratio]) => {
+        return sum + (weights[sourceId] ?? weights.total ?? 0) * ratio;
+      }, 0);
+    }
+
+    function directionContribution(note, direction) {
+      return directionAffinities[note.name]?.[direction] || 0;
+    }
+
+    function rawScoreForPurpose(notes, purpose) {
+      const categoryPart = notes.reduce((sum, note) => {
+        return sum + Object.entries(purpose.categoryWeights).reduce((inner, [categoryId, ratio]) => {
+          return inner + contributionForCategory(note, categoryId) * ratio;
+        }, 0);
+      }, 0);
+      const directionPart = notes.reduce((sum, note) => sum + directionContribution(note, purpose.direction), 0);
+      return 60 + categoryPart + directionPart;
+    }
+
+    function scoreValuesForPurpose(notes, purpose) {
+      const rawScore = rawScoreForPurpose(notes, purpose);
+      const cap = scoreCapForPurpose(notes, purpose);
+      return {
+        rawScore,
+        rankScore: Math.min(rawScore, cap),
+        displayScore: Math.min(clamp(Math.round(rawScore), 0, 100), cap)
+      };
+    }
+
+    function scoreForPurpose(notes, purpose) {
+      return scoreValuesForPurpose(notes, purpose).displayScore;
+    }
+
+    function scoreCapForPurpose(notes, purpose) {
+      const names = new Set(notes.map(note => note.name));
+      if (names.has("受死日")) return 45;
+      if (names.has("十死日")) return 52;
+      const fujobijuCappedPurposeIds = new Set([
+        "contract",
+        "openBusiness",
+        "subscribe",
+        "startInvesting",
+        "startDiet",
+        "bigShopping",
+        "wallet",
+        "appliance"
+      ]);
+      if (names.has("不成就日") && (fujobijuCappedPurposeIds.has(purpose.id) || purpose.direction === "start")) return 62;
+      if (purpose.id === "moving" && names.has("三隣亡")) return 45;
+      return Infinity;
+    }
+
+    function contributionForPurpose(note, purpose) {
+      const categoryPart = Object.entries(purpose.categoryWeights).reduce((sum, [categoryId, ratio]) => {
+        return sum + contributionForCategory(note, categoryId) * ratio;
+      }, 0);
+      return categoryPart + directionContribution(note, purpose.direction);
+    }
+
+    function scoreBreakdown(notes, categoryId) {
+      return notes.map(note => {
+        const value = contributionForCategory(note, categoryId);
+        return {
+          group: note.group,
+          name: note.name,
+          value: Math.round(value * 10) / 10,
+          label: `${note.group}:${note.name} ${value >= 0 ? "+" : ""}${Math.round(value * 10) / 10}`
+        };
+      });
+    }
+
+    function categoryLabel(id) {
+      return categories.find(category => category.id === id)?.label || "総合";
+    }
+
+    function purposeById(id) {
+      return purposeTemplates.find(purpose => purpose.id === id) || purposeTemplates[0];
+    }
+
+    function selectedPurpose() {
+      const purposeId = document.getElementById("purposeInput").value;
+      if (purposeId === "__detail__") {
+        return purposeById(document.getElementById("detailPurposeInput").value);
+      }
+      return purposeById(purposeId);
+    }
+
+    function selectPurposeById(purposeId) {
+      if (featuredPurposeIds.includes(purposeId)) {
+        purposeInput.value = purposeId;
+      } else {
+        purposeInput.value = "__detail__";
+        detailPurposeInput.value = purposeId;
+      }
+      syncPurposeControls();
+      render(parseInputDate(dateInput.value));
+    }
+
+    function purposeScoreBreakdown(notes, purpose) {
+      return notes.map(note => {
+        const value = Math.round(contributionForPurpose(note, purpose) * 10) / 10;
+        return { group: note.group, name: note.name, value };
+      }).filter(item => item.value !== 0);
+    }
+
+    function purposeWarnings(notes, purpose) {
+      const names = new Set(notes.map(note => note.name));
+      const messages = [];
+      if (["injection", "hospitalCheck", "acupuncture"].includes(purpose.id) && ["血忌日", "受死日", "十死日"].some(name => names.has(name))) {
+        messages.push("暦よりも体調と医療機関の判断を優先してください");
+      }
+      if (purpose.id === "moving" && names.has("三隣亡")) {
+        messages.push("三隣亡が重なっています。引越しは日程候補をもう一度見直すと安心です");
+      }
+      if (["contract", "openBusiness", "subscribe"].includes(purpose.id) && (names.has("不成就日") || names.has("破") || names.has("閉"))) {
+        messages.push("契約や申し込みは、内容確認と控えを丁寧に残すと安心です");
+      }
+      if (["declutter", "cancelContract", "unsubscribe", "snsCleanup", "relationshipCleanup"].includes(purpose.id) && names.has("一粒万倍日")) {
+        messages.push("手放す予定は、勢いで広げすぎず小さく区切ると落ち着きます");
+      }
+      return messages;
+    }
+
+    function judgmentLabel(categoryId, score) {
+      if (medicalCategoryIds.includes(categoryId) || medicalPurposeIds.includes(categoryId)) return "暦の参考メモ";
+      if (score >= 85) return "追い風の日";
+      if (score >= 70) return "整えながら進む日";
+      if (score >= 55) return "無理なく進める日";
+      if (score >= 40) return "守りを意識する日";
+      return "静かに整える日";
+    }
+
+    function titleText(purpose, score) {
+      if (purpose.id === "total") return "今日の流れ";
+      return `${judgmentLabel(purpose.id, score)}・${purpose.label}`;
+    }
+
+    function dayPhrase(score, goodNotes, warnNotes, purpose) {
+      const good = goodNotes.slice(0, 2).map(note => note.name).join("・");
+      const warn = warnNotes.slice(0, 1).map(note => note.name).join("");
+      if (!purpose.direction) {
+        if (score >= 85) return `${good || "良い流れ"}が追い風。今日は前向きに使いやすい日です。`;
+        if (score >= 70) return `${good || "穏やかな流れ"}を味方にしつつ、急がず進める日です。`;
+        if (score >= 55) return "大きく急がず、目の前のことから整える日です。";
+        if (score >= 40) return `${warn || "注意の流れ"}を少し意識して、余白を持ちたい日です。`;
+        return "今日は控えめに。静かに立て直す時間が似合う日です。";
+      }
+      const direction = `「${directions[purpose.direction]}」の流れ`;
+      if (score >= 85) return `${good || "良い流れ"}が追い風。${direction}に向かいやすい日です。`;
+      if (score >= 70) return `${good || "穏やかな流れ"}を味方にしつつ、${direction}を急がず進める日です。`;
+      if (score >= 55) return `${direction}は大きく急がず、目の前のことから整える日です。`;
+      if (score >= 40) return `${warn || "注意の流れ"}を少し意識して、${direction}に余白を持ちたい日です。`;
+      return `${direction}は控えめに。静かに立て直す時間が似合う日です。`;
+    }
+
+    function lifestyleComment(score, goodNotes, warnNotes, purpose, forcedWarnings) {
+      if (purpose.id === "total") {
+        if (score >= 85) return "今日は前向きに使いやすい流れです。小さな準備から始めると、自然に動き出しやすそうです。";
+        if (score >= 70) return "予定を詰め込みすぎず、整理や連絡を丁寧に進めると流れが整いやすそうです。";
+        if (score >= 55) return "無理に広げるより、優先順位を決めて一つずつ片づけると落ち着いて過ごせます。";
+        if (score >= 40) return "急な判断は避けて、確認や見直しに時間を取ると安心して進められそうです。";
+        return "今日は休息や片づけを優先して、予定を軽めに整えると穏やかに過ごせそうです。";
+      }
+      if (["injection", "hospitalCheck", "acupuncture"].includes(purpose.id)) {
+        return "体調と予約内容を確認して、無理なく過ごしましょう。医療機関の判断を最優先してください。";
+      }
+      if (forcedWarnings.length) return `${forcedWarnings[0]}。無理に進めるより、確認しながら小さく扱うと安心です。`;
+      if (score >= 85) {
+        return `「${purpose.label}」は、小さな準備から始めると流れに乗りやすそうです。`;
+      }
+      if (score >= 70) {
+        return `予定を詰め込みすぎず、「${purpose.label}」に必要な整理や連絡を丁寧に進めると流れが整いやすそうです。`;
+      }
+      if (score >= 55) {
+        return `無理に広げるより、「${purpose.label}」の優先順位を決めて一つずつ片づけると落ち着いて過ごせます。`;
+      }
+      if (score >= 40) {
+        return "急な判断は避けて、確認や見直しに時間を取ると安心して進められそうです。";
+      }
+      return "今日は休息や片づけを優先して、予定を軽めに整えると穏やかに過ごせそうです。";
+    }
+
+    function actionText(note) {
+      const actions = {
+        "大安": "大事な連絡や小さな決定を進める",
+        "友引": "人に相談する、近況を共有する",
+        "先勝": "午前中に要点だけ先に片づける",
+        "先負": "急がず準備や確認を整える",
+        "建": "新しい作業をひとつ始める",
+        "満": "受け取りやお祝いごとを大切にする",
+        "定": "予定や約束を固める",
+        "成": "形にしたいことを仕上げる",
+        "開": "知らせる、広げる、外に出す",
+        "一粒万倍日": "小さく始める、積み立てる",
+        "天赦日": "先延ばしにしていたことに着手する",
+        "寅の日": "お金まわりの見直しや旅の計画",
+        "巳の日": "買い物やご褒美を丁寧に選ぶ",
+        "己巳の日": "お金や持ち物を整える",
+        "天一天上": "移動や方角を気にしすぎず予定を組む",
+        "天恩日": "感謝を伝える、祝いごとを整える",
+        "母倉日": "家族や身近な人との予定を大切にする",
+        "大明日": "明るい場所へ出る、旅行や外出を考える",
+        "甲子の日": "新しい習慣を始める"
+      };
+      return actions[note.name] || `${note.name}を追い風として、無理のない一歩を進める`;
+    }
+
+    function shortActionText(value) {
+      return value.replace(/^・/, "").replace(/。$/, "");
+    }
+
+    function purposeActionText(purpose, score) {
+      if (purpose.id === "total") {
+        if (score >= 70) return "今日の流れを見ながら、進めたいことをひとつ選ぶ";
+        if (score >= 55) return "予定を詰めすぎず、できることから整える";
+        return "大きな判断より、確認と休息を優先する";
+      }
+      if (medicalPurposeIds.includes(purpose.id)) {
+        return "体調、予約時間、持ち物を確認して、無理のない予定に整える";
+      }
+      if (score >= 70) {
+        return `「${purpose.label}」に必要な準備を小さく進める`;
+      }
+      if (score >= 55) {
+        return `「${purpose.label}」は段取りを整え、できる範囲だけ進める`;
+      }
+      return `「${purpose.label}」は本番より準備や見直しを優先する`;
+    }
+
+    function cautionText(note) {
+      const cautions = {
+        "赤口": "急な判断、刃物や火の扱いは慎重に",
+        "仏滅": "大きな決定は一度寝かせる",
+        "破": "契約や約束の変更は丁寧に確認する",
+        "危": "移動や作業の安全確認を増やす",
+        "閉": "広げるより、内側を整える",
+        "不成就日": "新規開始は小さめにして、確認を優先する",
+        "土用": "土に関わる作業や無理な予定は控えめに",
+        "土用（間日）": "土用中でも軽めに動き、余白を残す",
+        "月破": "予定変更や衝突がないか早めに確認する",
+        "三隣亡": "建築、移転、住まいに関わる予定は慎重に見直す",
+        "八専": "人間関係や判断の偏りに注意する",
+        "八専（間日）": "八専中でも一呼吸おいて進める",
+        "受死日": "無理に始めず、守りと休息を優先する",
+        "十死日": "大きな決めごとは慎重に見直す",
+        "血忌日": "体に関わる予定は無理せず確認する",
+        "帰忌日": "移動や帰宅予定に余裕を持つ"
+      };
+      return cautions[note.name] || `${note.name}があるので、急がず確認を増やす`;
+    }
+
+    function renderTextList(id, items, fallback, options = {}) {
+      const list = document.getElementById(id);
+      list.innerHTML = "";
+      const values = items.length ? items : [fallback];
+      const visibleLimit = options.visibleLimit || values.length;
+      const visibleItems = values.slice(0, visibleLimit);
+      const hiddenItems = values.slice(visibleLimit);
+
+      visibleItems.forEach(value => {
+        const li = document.createElement("li");
+        li.textContent = `・${value}`;
+        list.appendChild(li);
+      });
+
+      if (!hiddenItems.length) return;
+
+      const li = document.createElement("li");
+      li.style.paddingLeft = "0";
+      li.style.textIndent = "0";
+      const details = document.createElement("details");
+      details.className = "more-actions";
+      const summary = document.createElement("summary");
+      summary.textContent = `残り${hiddenItems.length}件を見る`;
+      const nested = document.createElement("ul");
+      nested.className = "text-list";
+      hiddenItems.forEach(value => {
+        const item = document.createElement("li");
+        item.textContent = `・${value}`;
+        nested.appendChild(item);
+      });
+      details.appendChild(summary);
+      details.appendChild(nested);
+      li.appendChild(details);
+      list.appendChild(li);
+    }
+
+    function renderBreakdownList(id, items, fallback) {
+      const list = document.getElementById(id);
+      list.innerHTML = "";
+      const values = items.slice(0, 3);
+      if (!values.length) {
+        const li = document.createElement("li");
+        li.textContent = fallback;
+        list.appendChild(li);
+        return;
+      }
+      values.forEach(item => {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        const value = document.createElement("span");
+        name.textContent = `${item.group}・${item.name}`;
+        value.className = `value ${item.value > 0 ? "plus" : "minus"}`;
+        value.textContent = `${item.value > 0 ? "+" : ""}${item.value}`;
+        li.appendChild(name);
+        li.appendChild(value);
+        list.appendChild(li);
+      });
+    }
+
+    const themeDefinitions = {
+      arrange: {
+        title: "整える日",
+        summary: "今日は新しい挑戦を広げるより、身の回りの整理や調整、気持ちの立て直しに向いています。"
+      },
+      challenge: {
+        title: "挑戦の日",
+        summary: "今日は準備してきたことを一歩進めやすい流れです。契約や開始は確認を丁寧にすると安心です。"
+      },
+      act: {
+        title: "行動の日",
+        summary: "今日は外へ動く予定や移動、用事を進めることに向きやすい日です。時間に余裕を持つと流れに乗れそうです。"
+      },
+      send: {
+        title: "発信の日",
+        summary: "今日は考えを人に届けたり、仕事や発表を形にしたりすることに向きやすい日です。"
+      },
+      learn: {
+        title: "学びの日",
+        summary: "今日は情報を整理したり、考えを深めたりすることに向きやすい日です。静かな集中が味方になります。"
+      },
+      rest: {
+        title: "休息の日",
+        summary: "今日は無理に予定を詰めず、体調や気持ちを整えることを優先すると過ごしやすい日です。"
+      },
+      connect: {
+        title: "人と会う日",
+        summary: "今日は人との会話や相談、共有から流れが生まれやすい日です。やわらかくつながる予定が向いています。"
+      },
+      money: {
+        title: "お金の日",
+        summary: "今日は買い物やお金まわりの見直しに意識を向けやすい日です。勢いより納得感を大切にすると安心です。"
+      },
+      flow: {
+        title: "流れを見る日",
+        summary: "今日は全体のバランスを見ながら、無理なく進めることを選ぶと整いやすい日です。"
+      }
+    };
+
+    function categoryScoreItems(notes) {
+      return overviewPurposeItems.map(item => {
+        const purpose = purposeById(item.id);
+        return {
+          ...item,
+          purpose,
+          score: scoreForPurpose(notes, purpose)
+        };
+      });
+    }
+
+    function topRecommendedCategories(items) {
+      return items
+        .filter(item => item.id !== "total")
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+    }
+
+    function themeForCategories(items, totalScore) {
+      const top = topRecommendedCategories(items)[0];
+      if (!top) return themeDefinitions.flow;
+      if (totalScore < 45 && ["challenge", "act", "send", "money"].includes(top.theme)) {
+        return themeDefinitions.arrange;
+      }
+      return themeDefinitions[top.theme] || themeDefinitions.flow;
+    }
+
+    function renderThemeCategoryList(items) {
+      const list = document.getElementById("themeCategoryList");
+      list.innerHTML = "";
+      items.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `${item.label} ${item.score}`;
+        list.appendChild(li);
+      });
+    }
+
+    function renderConclusion(score, categoryItems, purpose) {
+      const topItems = topRecommendedCategories(categoryItems);
+      const theme = themeForCategories(categoryItems, score);
+      const scoreLabel = purpose.id === "total" ? "総合スコア" : `${purpose.label}スコア`;
+      document.getElementById("conclusionScore").textContent = score;
+      document.getElementById("conclusionTitle").textContent = theme.title;
+      document.getElementById("conclusionSummary").textContent = theme.summary;
+      document.getElementById("themeScoreLabel").textContent = scoreLabel;
+      document.getElementById("themeScoreNote").textContent = `${purpose.label} ${score}点。詳しく見るカテゴリは下の一覧から切り替えできます。`;
+      renderThemeCategoryList(topItems);
+    }
+
+    function formatShortDate(date) {
+      return new Intl.DateTimeFormat("ja-JP", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        weekday: "short"
+      }).format(date);
+    }
+
+    function topFactors(breakdownItems, positive) {
+      return breakdownItems
+        .filter(item => positive ? item.value > 0 : item.value < 0)
+        .sort((a, b) => positive ? b.value - a.value : a.value - b.value)
+        .slice(0, 2);
+    }
+
+    function renderFactorList(items, emptyText) {
+      const ul = document.createElement("ul");
+      ul.className = "breakdown-list";
+      if (!items.length) {
+        const li = document.createElement("li");
+        li.textContent = emptyText;
+        ul.appendChild(li);
+        return ul;
+      }
+      items.forEach(item => {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        const value = document.createElement("span");
+        name.textContent = item.name;
+        value.className = `value ${item.value > 0 ? "plus" : "minus"}`;
+        value.textContent = `${item.value > 0 ? "+" : ""}${item.value}`;
+        li.appendChild(name);
+        li.appendChild(value);
+        ul.appendChild(li);
+      });
+      return ul;
+    }
+
+    function rankingRecord(date, purpose) {
+      const data = buildNotes(date);
+      if (!data) return null;
+      const scoreValues = scoreValuesForPurpose(data.notes, purpose);
+      const goodNotes = data.notes.filter(note => note.kind === "good");
+      const warnNotes = data.notes.filter(note => note.kind === "warn");
+      const breakdown = purposeScoreBreakdown(data.notes, purpose);
+      return {
+        date,
+        score: scoreValues.displayScore,
+        rawScore: scoreValues.rawScore,
+        rankScore: scoreValues.rankScore,
+        comment: dayPhrase(scoreValues.displayScore, goodNotes, warnNotes, purpose),
+        plusItems: topFactors(breakdown, true),
+        minusItems: topFactors(breakdown, false)
+      };
+    }
+
+    function renderNextBestFactors(items) {
+      const list = document.getElementById("nextBestFactors");
+      list.innerHTML = "";
+      if (!items.length) {
+        const li = document.createElement("li");
+        li.textContent = "大きな加点要素はありません";
+        list.appendChild(li);
+        return;
+      }
+      items.forEach(item => {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        const value = document.createElement("span");
+        name.textContent = item.name;
+        value.className = "value plus";
+        value.textContent = `+${item.value}`;
+        li.appendChild(name);
+        li.appendChild(value);
+        list.appendChild(li);
+      });
+    }
+
+    function renderNextBestCard(baseDate, purpose) {
+      let firstHighScore = null;
+      let bestFallback = null;
+
+      for (let offset = 1; offset <= 365; offset += 1) {
+        const date = addDays(baseDate, offset);
+        if (!inSupportedRange(dateToInputValue(date))) break;
+        const record = rankingRecord(date, purpose);
+        if (!record) continue;
+        record.daysUntil = offset;
+        if (!bestFallback || record.rankScore > bestFallback.rankScore) bestFallback = record;
+        if (record.score >= 90) {
+          firstHighScore = record;
+          break;
+        }
+      }
+
+      const record = firstHighScore || bestFallback;
+      if (!record) {
+        renderEmptyNextBest("次のおすすめ日を表示できません", "未来365日以内に表示できる日付がありません。");
+        return;
+      }
+
+      document.getElementById("nextBestTitle").textContent = firstHighScore
+        ? `${purpose.label}に向く高得点日`
+        : `${purpose.label}の最高候補`;
+      document.getElementById("nextBestDate").textContent = `${formatShortDate(record.date)} / あと${record.daysUntil}日`;
+      document.getElementById("nextBestScore").textContent = record.score;
+      document.getElementById("nextBestNote").textContent = firstHighScore
+        ? "未来365日以内で最初に見つかった90点以上の日です。"
+        : "未来365日以内に90点以上の日は見つからなかったため、最高スコアの日を表示しています。";
+      renderNextBestFactors(record.plusItems);
+    }
+
+    function renderEmptyNextBest(title, note) {
+      document.getElementById("nextBestTitle").textContent = title;
+      document.getElementById("nextBestDate").textContent = "";
+      document.getElementById("nextBestScore").textContent = "--";
+      document.getElementById("nextBestNote").textContent = note;
+      renderNextBestFactors([]);
+    }
+
+    function renderFutureRanking(baseDate, purpose) {
+      const period = Number(document.getElementById("rankingPeriodInput").value || 30);
+      const type = document.getElementById("rankingTypeInput").value || "best";
+      const list = document.getElementById("rankingList");
+      list.innerHTML = "";
+
+      const records = [];
+      for (let offset = 1; offset <= period; offset += 1) {
+        const date = addDays(baseDate, offset);
+        if (!inSupportedRange(dateToInputValue(date))) break;
+        const record = rankingRecord(date, purpose);
+        if (record) records.push(record);
+      }
+
+      records.sort((a, b) => type === "best" ? b.rankScore - a.rankScore : a.rankScore - b.rankScore);
+      const topRecords = records.slice(0, 10);
+      const typeLabel = type === "best" ? "おすすめ日" : "避けたい日";
+      document.getElementById("rankingMeta").textContent = `${purpose.label} / ${period}日以内 / ${typeLabel} TOP10`;
+
+      if (!topRecords.length) {
+        const li = document.createElement("li");
+        li.className = "ranking-item";
+        li.textContent = "表示できる日付がありません";
+        list.appendChild(li);
+        return;
+      }
+
+      topRecords.forEach((record, index) => {
+        const li = document.createElement("li");
+        li.className = "ranking-item";
+
+        const rank = document.createElement("div");
+        rank.className = "ranking-rank";
+        rank.textContent = index + 1;
+
+        const body = document.createElement("div");
+        const date = document.createElement("p");
+        date.className = "ranking-date";
+        date.textContent = formatShortDate(record.date);
+        const comment = document.createElement("p");
+        comment.className = "ranking-comment";
+        comment.textContent = record.comment;
+
+        const factors = document.createElement("div");
+        factors.className = "ranking-factors";
+        const plus = document.createElement("div");
+        plus.className = "mini-panel";
+        const plusLabel = document.createElement("p");
+        plusLabel.className = "label";
+        plusLabel.textContent = "主な加点";
+        plus.appendChild(plusLabel);
+        plus.appendChild(renderFactorList(record.plusItems, "なし"));
+
+        const minus = document.createElement("div");
+        minus.className = "mini-panel caution";
+        const minusLabel = document.createElement("p");
+        minusLabel.className = "label";
+        minusLabel.textContent = "主な減点";
+        minus.appendChild(minusLabel);
+        minus.appendChild(renderFactorList(record.minusItems, "なし"));
+
+        factors.appendChild(plus);
+        factors.appendChild(minus);
+        body.appendChild(date);
+        body.appendChild(comment);
+        body.appendChild(factors);
+
+        const score = document.createElement("div");
+        score.className = "ranking-score";
+        score.innerHTML = `${record.score}<small>/100</small>`;
+
+        li.appendChild(rank);
+        li.appendChild(body);
+        li.appendChild(score);
+        list.appendChild(li);
+      });
+    }
+
+    function renderEmptyRanking(message) {
+      document.getElementById("rankingMeta").textContent = message;
+      const list = document.getElementById("rankingList");
+      list.innerHTML = "";
+      const li = document.createElement("li");
+      li.className = "ranking-item";
+      li.textContent = "ランキングを表示できません";
+      list.appendChild(li);
+    }
+
+    function scoreClass(score) {
+      if (score >= 90) return "score-excellent";
+      if (score >= 75) return "score-good";
+      if (score >= 60) return "score-normal";
+      if (score >= 40) return "score-watch";
+      return "score-caution";
+    }
+
+    function totalScoreForDate(date) {
+      const data = buildNotes(date);
+      if (!data) return null;
+      return scoreForPurpose(data.notes, totalPurpose);
+    }
+
+    function renderCategoryOverview(items, activePurposeId) {
+      const list = document.getElementById("categoryOverview");
+      list.innerHTML = "";
+      items.forEach(item => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `category-card ${scoreClass(item.score)}`;
+        if (item.purpose.id === activePurposeId) button.classList.add("is-active");
+        button.setAttribute("aria-label", `${item.label} ${item.score}点`);
+
+        const name = document.createElement("span");
+        name.className = "category-name";
+        name.textContent = item.label;
+        const value = document.createElement("span");
+        value.className = "category-score";
+        value.textContent = item.score;
+
+        button.appendChild(name);
+        button.appendChild(value);
+        button.addEventListener("click", () => selectPurposeById(item.id));
+        list.appendChild(button);
+      });
+    }
+
+    function renderEmptyCategoryOverview() {
+      const list = document.getElementById("categoryOverview");
+      list.innerHTML = "";
+      overviewPurposeItems.forEach(item => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "category-card";
+        button.disabled = true;
+
+        const name = document.createElement("span");
+        name.className = "category-name";
+        name.textContent = item.label;
+        const value = document.createElement("span");
+        value.className = "category-score";
+        value.textContent = "--";
+
+        button.appendChild(name);
+        button.appendChild(value);
+        list.appendChild(button);
+      });
+    }
+
+    function renderMonthCalendar(selectedDate) {
+      const grid = document.getElementById("monthCalendar");
+      grid.innerHTML = "";
+      const year = calendarMonth.getFullYear();
+      const month = calendarMonth.getMonth();
+      document.getElementById("monthTitle").textContent = `${year}年${month + 1}月`;
+
+      const firstDate = new Date(year, month, 1);
+      const lastDate = new Date(year, month + 1, 0);
+      const leadingEmptyDays = (firstDate.getDay() + 6) % 7;
+      const todayValue = dateToInputValue(new Date());
+      const selectedValue = selectedDate ? dateToInputValue(selectedDate) : "";
+
+      for (let i = 0; i < leadingEmptyDays; i += 1) {
+        const empty = document.createElement("div");
+        empty.className = "calendar-day is-empty";
+        grid.appendChild(empty);
+      }
+
+      for (let day = 1; day <= lastDate.getDate(); day += 1) {
+        const date = new Date(year, month, day);
+        const value = dateToInputValue(date);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "calendar-day";
+        button.setAttribute("aria-label", `${formatDate(date)} 総合スコア`);
+
+        const score = inSupportedRange(value) ? totalScoreForDate(date) : null;
+        if (score !== null) button.classList.add(scoreClass(score));
+        if (value === todayValue) button.classList.add("is-today");
+        if (value === selectedValue) button.classList.add("is-selected");
+
+        const dateText = document.createElement("span");
+        dateText.className = "calendar-date";
+        dateText.textContent = day;
+        const scoreText = document.createElement("span");
+        scoreText.className = "calendar-score";
+        scoreText.textContent = score === null ? "--" : score;
+        button.appendChild(dateText);
+        button.appendChild(scoreText);
+
+        button.addEventListener("click", () => {
+          dateInput.value = value;
+          render(date);
+        });
+
+        grid.appendChild(button);
+      }
+    }
+
+    function renderEmptyConclusion(title, summary, recommend, caution) {
+      document.getElementById("conclusionScore").textContent = "--";
+      document.getElementById("conclusionTitle").textContent = title;
+      document.getElementById("conclusionSummary").textContent = summary;
+      document.getElementById("themeScoreLabel").textContent = "選択カテゴリスコア";
+      document.getElementById("themeScoreNote").textContent = caution;
+      const list = document.getElementById("themeCategoryList");
+      list.innerHTML = "";
+      const li = document.createElement("li");
+      li.textContent = recommend;
+      list.appendChild(li);
+    }
+
+    function makeChip(note) {
+      const li = document.createElement("li");
+      li.className = `chip ${note.kind === "good" ? "good" : note.kind === "warn" ? "warn" : ""}`;
+      li.textContent = note.name;
+      return li;
+    }
+
+    function renderChips(id, notes, emptyText) {
+      const list = document.getElementById(id);
+      list.innerHTML = "";
+      if (!notes.length) {
+        const li = document.createElement("li");
+        li.className = "chip";
+        li.textContent = emptyText;
+        list.appendChild(li);
+        return;
+      }
+      notes.forEach(note => list.appendChild(makeChip(note)));
+    }
+
+    function displayNotes(notes, nameSet) {
+      return notes.filter(note => nameSet.has(note.name));
+    }
+
+    function renderDetails(notes) {
+      const list = document.getElementById("detailList");
+      list.innerHTML = "";
+      notes.forEach(note => {
+        const li = document.createElement("li");
+        li.className = "detail";
+        li.innerHTML = `<b>${note.group}</b><span>${note.name}: ${note.text}</span>`;
+        list.appendChild(li);
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function csvCell(value) {
+      return `"${String(value).replace(/"/g, '""')}"`;
+    }
+
+    function debugRecord(value, categoryId) {
+      const date = parseInputDate(value);
+      const data = buildNotes(date);
+      if (!data) return null;
+      const senjitsu = data.notes.filter(note => note.group === "選日・期間").map(note => note.name);
+      const breakdown = scoreBreakdown(data.notes, categoryId);
+      const verification = verificationResults[value] || { memo: "", fields: {} };
+      return {
+        date: value,
+        rokuyo: data.rokuyo,
+        choku: data.choku,
+        eto: data.eto.name,
+        kyusei: data.dayKyusei,
+        yearKyusei: data.yearKyusei,
+        shuku: data.shuku,
+        moonAge: data.moonAge.toFixed(1),
+        senjitsu: senjitsu.join(" / ") || "なし",
+        score: scoreForCategory(data.notes, categoryId),
+        breakdown: `基礎点 60 / ${breakdown.map(item => item.label).join(" / ")}`,
+        verification
+      };
+    }
+
+    function renderDebugTable(categoryId) {
+      const records = debugDates2026.map(value => debugRecord(value, categoryId)).filter(Boolean);
+      document.getElementById("debugCaption").textContent = `現在のカテゴリ「${categoryLabel(categoryId)}」でスコア内訳を出力しています。CSVには各項目ごとに「外部確認結果」「判定（OK / 要確認 / NG）」列を用意しています。`;
+      document.getElementById("debugRows").innerHTML = records.map(record => `
+        <tr>
+          <td>${escapeHtml(record.date)}</td>
+          <td>${escapeHtml(record.rokuyo)}</td>
+          <td>${escapeHtml(record.choku)}</td>
+          <td>${escapeHtml(record.eto)}</td>
+          <td>${escapeHtml(record.kyusei)}</td>
+          <td>${escapeHtml(record.yearKyusei)}</td>
+          <td>${escapeHtml(record.shuku)}</td>
+          <td>${escapeHtml(record.senjitsu)}</td>
+          <td>${escapeHtml(record.moonAge)}</td>
+          <td>${escapeHtml(record.breakdown)} = ${escapeHtml(record.score)}</td>
+        </tr>
+      `).join("");
+
+      const compareFields = [
+        ["六曜", "rokuyo"],
+        ["十二直", "choku"],
+        ["日干支", "eto"],
+        ["九星", "kyusei"],
+        ["二十八宿", "shuku"],
+        ["選日一覧", "senjitsu"]
+      ];
+      const header = [
+        "日付",
+        ...compareFields.flatMap(([label]) => [`${label}_アプリ値`, `${label}_外部確認結果`, `${label}_判定`]),
+        "年九星_補助情報",
+        "月齢",
+        "スコア",
+        "スコア内訳",
+        "メモ"
+      ];
+      const rows = records.map(record => [
+        record.date,
+        ...compareFields.flatMap(([, key]) => {
+          const verified = record.verification.fields[key] || {};
+          return [record[key], verified.external || "", verified.judgment || ""];
+        }),
+        record.yearKyusei,
+        record.moonAge,
+        record.score,
+        record.breakdown,
+        record.verification.memo || ""
+      ]);
+      document.getElementById("debugCsv").value = [header, ...rows]
+        .map(row => row.map(csvCell).join(","))
+        .join("\n");
+    }
+
+    function showUnavailable(message) {
+      document.getElementById("date").textContent = message || "";
+      ["rokuyo", "choku", "eto", "dayKyusei", "yearKyusei"].forEach(id => {
+        document.getElementById(id).textContent = "--";
+      });
+      document.getElementById("lunar").textContent = "";
+      renderEmptyConclusion(
+        "暦データがありません",
+        "旧暦を取得できないため、今日の結論は表示していません。",
+        "日付とブラウザの暦データ対応を確認する",
+        "判定を表示できない状態です"
+      );
+      renderEmptyNextBest("次のおすすめ日を表示できません", "暦データを取得できないため、候補日を探せません。");
+      renderEmptyRanking("暦データを取得できません");
+      renderEmptyCategoryOverview();
+      renderTextList("recommendList", [], "日付を確認して、もう一度試してください");
+      renderTextList("cautionList", [], "暦データが取れないため、判定は表示していません");
+      renderChips("normalList", [], "なし");
+      renderChips("detailChipList", [], "なし");
+      renderDetails([]);
+    }
+
+    function render(date) {
+      const inputValue = dateToInputValue(date);
+      const categoryId = document.getElementById("categoryInput").value || "total";
+      const purpose = selectedPurpose();
+
+      if (!inSupportedRange(inputValue)) {
+        document.getElementById("date").textContent = formatDate(date);
+        ["rokuyo", "choku", "eto", "dayKyusei", "yearKyusei"].forEach(id => {
+          document.getElementById(id).textContent = "--";
+        });
+        document.getElementById("lunar").textContent = "";
+        renderEmptyConclusion(
+          "対応範囲外です",
+          "1940年1月1日から2099年12月31日の範囲で指定してください。",
+          "対応範囲内の日付を選ぶ",
+          "範囲外の日付は暦データを表示しません"
+        );
+        renderEmptyNextBest("次のおすすめ日を表示できません", "対応範囲内の日付を選ぶと、未来候補を表示できます。");
+        renderEmptyRanking("対応範囲外です");
+        renderEmptyCategoryOverview();
+        renderTextList("recommendList", [], "1940年1月1日から2099年12月31日の範囲で選んでください");
+        renderTextList("cautionList", [], "範囲外の日付は暦データを表示しません");
+        renderChips("normalList", [], "範囲外");
+        renderChips("detailChipList", [], "なし");
+        renderDetails([]);
+        renderMonthCalendar(date);
+        return;
+      }
+
+      const data = buildNotes(date);
+      if (!data) {
+        showUnavailable(formatDate(date));
+        return;
+      }
+
+      const score = scoreForPurpose(data.notes, purpose);
+      const goodNotes = data.notes.filter(note => note.kind === "good");
+      const warnNotes = data.notes.filter(note => note.kind === "warn");
+      const normalNotes = displayNotes(data.notes, normalDisplayNames);
+      const detailNotes = displayNotes(data.notes, detailDisplayNames);
+      const leapText = data.lunar.isLeap ? "閏" : "";
+      const forcedWarnings = purposeWarnings(data.notes, purpose);
+      const isMedicalPurpose = medicalPurposeIds.includes(purpose.id);
+      const recommendationItems = isMedicalPurpose
+        ? [purposeActionText(purpose, score)]
+        : score >= 40
+          ? [purposeActionText(purpose, score), ...goodNotes.slice(0, 2).map(actionText)]
+          : [purposeActionText(purpose, score)];
+      const cautionItems = [...forcedWarnings, ...warnNotes.slice(0, 3).map(cautionText)];
+      const categoryItems = categoryScoreItems(data.notes);
+
+      document.getElementById("date").textContent = formatDate(date);
+      document.getElementById("rokuyo").textContent = data.rokuyo;
+      document.getElementById("choku").textContent = data.choku;
+      document.getElementById("eto").textContent = data.eto.name;
+      document.getElementById("dayKyusei").textContent = data.dayKyusei.replace("星", "");
+      document.getElementById("yearKyusei").textContent = data.yearKyusei.replace("星", "");
+      document.getElementById("lunar").textContent = `旧暦 ${leapText}${data.lunar.month}月${data.lunar.day}日 / 二十八宿 ${data.shuku} / 二十四節気 ${data.solar.currentTerm.name} / 月齢 ${data.moonAge.toFixed(1)}`;
+      document.getElementById("medicalNotice").classList.toggle("is-visible", isMedicalPurpose);
+
+      renderConclusion(score, categoryItems, purpose);
+      renderCategoryOverview(categoryItems, purpose.id);
+      renderNextBestCard(date, purpose);
+      renderFutureRanking(date, purpose);
+      renderTextList("recommendList", recommendationItems, "今日は予定を詰めすぎず、できることをひとつ丁寧に進める", { visibleLimit: 3 });
+      renderTextList("cautionList", cautionItems, "無理をせず、確認と休憩を少し多めにする");
+      renderChips("normalList", normalNotes, "なし");
+      renderChips("detailChipList", detailNotes, "なし");
+      renderDetails(data.notes);
+      renderDebugTable(categoryId);
+      renderMonthCalendar(date);
+    }
+
+    const dateInput = document.getElementById("dateInput");
+    const categoryInput = document.getElementById("categoryInput");
+    const purposeInput = document.getElementById("purposeInput");
+    const detailPurposeField = document.getElementById("detailPurposeField");
+    const detailPurposeInput = document.getElementById("detailPurposeInput");
+    const rankingPeriodInput = document.getElementById("rankingPeriodInput");
+    const rankingTypeInput = document.getElementById("rankingTypeInput");
+    const prevMonthButton = document.getElementById("prevMonthButton");
+    const nextMonthButton = document.getElementById("nextMonthButton");
+
+    categories.forEach(category => {
+      const option = document.createElement("option");
+      option.value = category.id;
+      option.textContent = category.label;
+      categoryInput.appendChild(option);
+    });
+
+    const featuredGroup = document.createElement("optgroup");
+    featuredGroup.label = "よく使う用途";
+    featuredPurposeIds.forEach(id => {
+      const purpose = purposeById(id);
+      const option = document.createElement("option");
+      option.value = purpose.id;
+      option.textContent = purpose.label;
+      featuredGroup.appendChild(option);
+    });
+    purposeInput.appendChild(featuredGroup);
+
+    const detailOption = document.createElement("option");
+    detailOption.value = "__detail__";
+    detailOption.textContent = "その他の用途から選ぶ";
+    purposeInput.appendChild(detailOption);
+
+    purposeGroups.forEach(group => {
+      const optionGroup = document.createElement("optgroup");
+      optionGroup.label = group.label;
+      group.items.forEach(([id, label]) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = label;
+        optionGroup.appendChild(option);
+      });
+      detailPurposeInput.appendChild(optionGroup);
+    });
+    purposeInput.value = "total";
+    detailPurposeInput.value = "contract";
+
+    function syncPurposeControls() {
+      detailPurposeField.classList.toggle("is-hidden", purposeInput.value !== "__detail__");
+    }
+
+    const todayValue = dateToInputValue(new Date());
+    dateInput.value = inSupportedRange(todayValue) ? todayValue : "2026-05-16";
+    let calendarMonth = (() => {
+      const initialDate = parseInputDate(dateInput.value);
+      return new Date(initialDate.getFullYear(), initialDate.getMonth(), 1);
+    })();
+
+    function selectDate(date) {
+      calendarMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+      dateInput.value = dateToInputValue(date);
+      render(date);
+    }
+
+    dateInput.addEventListener("change", () => {
+      const date = parseInputDate(dateInput.value);
+      if (!date) showUnavailable(dateInput.value);
+      else selectDate(date);
+    });
+    categoryInput.addEventListener("change", () => render(parseInputDate(dateInput.value)));
+    purposeInput.addEventListener("change", () => {
+      syncPurposeControls();
+      render(parseInputDate(dateInput.value));
+    });
+    detailPurposeInput.addEventListener("change", () => render(parseInputDate(dateInput.value)));
+    rankingPeriodInput.addEventListener("change", () => render(parseInputDate(dateInput.value)));
+    rankingTypeInput.addEventListener("change", () => render(parseInputDate(dateInput.value)));
+    prevMonthButton.addEventListener("click", () => {
+      calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1);
+      renderMonthCalendar(parseInputDate(dateInput.value));
+    });
+    nextMonthButton.addEventListener("click", () => {
+      calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1);
+      renderMonthCalendar(parseInputDate(dateInput.value));
+    });
+
+    syncPurposeControls();
+    render(parseInputDate(dateInput.value));
+  </script>
+</body>
+</html>
