@@ -2229,8 +2229,9 @@
 
     function scoreCapForPurpose(notes, purpose) {
       const names = new Set(notes.map(note => note.name));
-      if (names.has("受死日")) return 45;
-      if (names.has("十死日")) return 52;
+      const caps = [];
+      if (names.has("受死日")) caps.push(jushibiCapForPurpose(purpose));
+      if (names.has("十死日")) caps.push(52);
       const fujobijuCappedPurposeIds = new Set([
         "contract",
         "openBusiness",
@@ -2241,9 +2242,28 @@
         "wallet",
         "appliance"
       ]);
-      if (names.has("不成就日") && (fujobijuCappedPurposeIds.has(purpose.id) || purpose.direction === "start")) return 62;
-      if (purpose.id === "moving" && names.has("三隣亡")) return 45;
-      return Infinity;
+      if (names.has("不成就日") && (fujobijuCappedPurposeIds.has(purpose.id) || purpose.direction === "start")) caps.push(62);
+      if (purpose.id === "moving" && names.has("三隣亡")) caps.push(45);
+      return caps.length ? Math.min(...caps) : Infinity;
+    }
+
+    function jushibiCapForPurpose(purpose) {
+      const startPurchasePurposeIds = new Set([
+        "contract",
+        "openBusiness",
+        "subscribe",
+        "startInvesting",
+        "bigShopping",
+        "wallet",
+        "appliance"
+      ]);
+
+      if (purpose.id === "total") return 65;
+      if (medicalPurposeIds.includes(purpose.id) || (purpose.categoryWeights.healthBody || 0) >= 0.5) return 50;
+      if (purpose.id === "moving") return 55;
+      if (startPurchasePurposeIds.has(purpose.id) || purpose.direction === "start" || (purpose.categoryWeights.startContract || 0) >= 0.45) return 58;
+      if (purpose.direction === "rest" || purpose.direction === "release" || (purpose.categoryWeights.restTune || 0) >= 0.45) return 78;
+      return 65;
     }
 
     function contributionForPurpose(note, purpose) {
