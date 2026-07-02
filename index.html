@@ -51,6 +51,13 @@
       overflow-x: hidden;
     }
 
+    html,
+    body,
+    main,
+    section {
+      max-width: 100%;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -110,17 +117,27 @@
       margin-bottom: var(--space-lg);
     }
 
+    .date-controls {
+      display: grid;
+      gap: var(--space-md);
+      min-width: 0;
+      overflow: hidden;
+    }
+
     label {
       display: grid;
       gap: var(--space-xs);
       min-width: 0;
+      max-width: 100%;
     }
 
     input,
     select {
+      display: block;
       width: 100%;
       max-width: 100%;
       min-width: 0;
+      min-inline-size: 0;
       min-height: 44px;
       padding: 9px 12px;
       border: 1px solid var(--line);
@@ -129,6 +146,11 @@
       background: var(--color-surface);
       font: inherit;
       font-size: 16px;
+    }
+
+    input[type="date"]::-webkit-date-and-time-value {
+      min-width: 0;
+      text-align: left;
     }
 
     input:focus,
@@ -158,12 +180,48 @@
       gap: var(--space-sm);
     }
 
+    .koyomi-item {
+      min-width: 0;
+    }
+
     .key-name {
       margin: 0;
       color: var(--accent);
       font-size: 28px;
       font-weight: 800;
       line-height: 1.1;
+      overflow-wrap: anywhere;
+    }
+
+    .koyomi-memo {
+      margin: var(--space-xs) 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .koyomi-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+
+    .koyomi-meta-item {
+      min-width: 0;
+      padding: var(--space-sm);
+      border: 1px solid var(--color-line);
+      border-radius: var(--radius-card);
+      background: var(--color-surface-soft);
+    }
+
+    .koyomi-meta-value {
+      margin: 0;
+      color: var(--color-text);
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
     }
 
     .green {
@@ -500,6 +558,19 @@
       gap: var(--space-sm);
     }
 
+    .score-factors {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+
+    .score-factors-note {
+      margin: var(--space-xs) 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
     .mini-panel {
       padding: var(--space-sm);
       border: 1px solid var(--color-line);
@@ -577,6 +648,11 @@
     .breakdown-list .value {
       flex: none;
       font-weight: 800;
+    }
+
+    .breakdown-list .empty {
+      color: var(--muted);
+      font-weight: 700;
     }
 
     .breakdown-list .plus {
@@ -1004,12 +1080,14 @@
       .controls,
       .conclusion-card,
       .conclusion-points,
+      .score-factors,
       .score-breakdown,
       .next-best-card,
       .category-grid,
       .ranking-controls,
       .ranking-item,
       .ranking-factors,
+      .koyomi-meta-grid,
       .key-grid {
         grid-template-columns: 1fr;
       }
@@ -1063,6 +1141,10 @@
         font-weight: 700;
       }
 
+      .koyomi-meta-grid {
+        gap: var(--space-sm);
+      }
+
       .calendar-weekdays,
       .calendar-grid {
         gap: 4px;
@@ -1114,6 +1196,9 @@
       input,
       select {
         padding: 8px 10px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
       }
 
       input,
@@ -1171,6 +1256,11 @@
         gap: var(--space-sm);
       }
 
+      .score-factors {
+        grid-column: 1 / -1;
+        gap: var(--space-sm);
+      }
+
       .mini-panel,
       .category-card,
       .ranking-item {
@@ -1186,7 +1276,8 @@
       .text-list,
       .day-phrase,
       .notice,
-      .medical {
+      .medical,
+      .koyomi-memo {
         font-size: 14px;
       }
 
@@ -1199,6 +1290,10 @@
 
       .key-name {
         font-size: 21px;
+      }
+
+      .koyomi-meta-value {
+        font-size: 14px;
       }
 
       .detail {
@@ -1296,7 +1391,7 @@
       <p class="app-lead">日付を選ぶと、その日の暦をやさしく整理して表示します。</p>
     </header>
 
-    <section class="section" aria-label="日付選択">
+    <section class="section date-controls" aria-label="日付選択">
       <label>
         <span class="label">日付を指定</span>
         <input id="dateInput" type="date" min="1940-01-01" max="2099-12-31">
@@ -1336,34 +1431,51 @@
             <p id="themeScoreNote">--</p>
           </div>
         </div>
+        <div class="score-factors" aria-label="今日のスコア理由">
+          <div class="mini-panel">
+            <p class="label">主な加点要素</p>
+            <ul class="breakdown-list" id="todayPlusFactors"></ul>
+          </div>
+          <div class="mini-panel caution">
+            <p class="label">主な注意要素</p>
+            <ul class="breakdown-list" id="todayMinusFactors"></ul>
+          </div>
+        </div>
+        <p class="score-factors-note">4件以上ある場合は折りたたみで表示します。詳しい暦注は下の「詳細表示」で確認できます。</p>
       </div>
     </section>
 
     <section class="section koyomi-card" aria-label="今日の暦">
       <h2 class="section-title">今日の暦</h2>
       <div class="key-grid">
-        <div>
+        <div class="koyomi-item">
           <p class="label">六曜</p>
           <p class="key-name" id="rokuyo">--</p>
+          <p class="koyomi-memo" id="rokuyoMemo"></p>
         </div>
-        <div>
+        <div class="koyomi-item">
           <p class="label">十二直</p>
           <p class="key-name green" id="choku">--</p>
+          <p class="koyomi-memo" id="chokuMemo"></p>
         </div>
-        <div>
+        <div class="koyomi-item">
           <p class="label">日干支</p>
           <p class="key-name blue" id="eto">--</p>
+          <p class="koyomi-memo" id="etoMemo"></p>
         </div>
-        <div>
+        <div class="koyomi-item">
           <p class="label">日九星</p>
           <p class="key-name blue" id="dayKyusei">--</p>
+          <p class="koyomi-memo" id="dayKyuseiMemo"></p>
         </div>
-        <div>
+        <div class="koyomi-item">
           <p class="label">年九星</p>
           <p class="key-name blue" id="yearKyusei">--</p>
+          <p class="koyomi-memo" id="yearKyuseiMemo"></p>
         </div>
       </div>
       <p class="sub" id="lunar"></p>
+      <div class="koyomi-meta-grid" id="koyomiMeta"></div>
       <ul class="chips" id="normalList"></ul>
     </section>
 
@@ -1667,6 +1779,94 @@
     const shukuNames = ["角", "亢", "氐", "房", "心", "尾", "箕", "斗", "牛", "女", "虚", "危", "室", "壁", "奎", "婁", "胃", "昴", "畢", "觜", "参", "井", "鬼", "柳", "星", "張", "翼", "軫"];
     const kyuseiNames = ["一白水星", "二黒土星", "三碧木星", "四緑木星", "五黄土星", "六白金星", "七赤金星", "八白土星", "九紫火星"];
 
+    const stemReadings = {
+      "甲": "きのえ", "乙": "きのと", "丙": "ひのえ", "丁": "ひのと", "戊": "つちのえ",
+      "己": "つちのと", "庚": "かのえ", "辛": "かのと", "壬": "みずのえ", "癸": "みずのと"
+    };
+    const branchReadings = {
+      "子": "ね", "丑": "うし", "寅": "とら", "卯": "う", "辰": "たつ", "巳": "み",
+      "午": "うま", "未": "ひつじ", "申": "さる", "酉": "とり", "戌": "いぬ", "亥": "い"
+    };
+    const readings = {
+      rokuyo: {
+        "大安": "たいあん", "赤口": "しゃっこう", "先勝": "せんしょう",
+        "友引": "ともびき", "先負": "せんぶ", "仏滅": "ぶつめつ"
+      },
+      choku: {
+        "建": "たつ", "除": "のぞく", "満": "みつ", "平": "たいら", "定": "さだん",
+        "執": "とる", "破": "やぶる", "危": "あやぶ", "成": "なる", "納": "おさん",
+        "開": "ひらく", "閉": "とづ"
+      },
+      shuku: {
+        "角": "かく", "亢": "こう", "氐": "てい", "房": "ぼう", "心": "しん", "尾": "び", "箕": "き",
+        "斗": "と", "牛": "ぎゅう", "女": "じょ", "虚": "きょ", "危": "き", "室": "しつ", "壁": "へき",
+        "奎": "けい", "婁": "ろう", "胃": "い", "昴": "ぼう", "畢": "ひつ", "觜": "し", "参": "しん",
+        "井": "せい", "鬼": "き", "柳": "りゅう", "星": "せい", "張": "ちょう", "翼": "よく", "軫": "しん"
+      },
+      kyusei: {
+        "一白水星": "いっぱくすいせい", "二黒土星": "じこくどせい", "三碧木星": "さんぺきもくせい",
+        "四緑木星": "しろくもくせい", "五黄土星": "ごおうどせい", "六白金星": "ろっぱくきんせい",
+        "七赤金星": "しちせききんせい", "八白土星": "はっぱくどせい", "九紫火星": "きゅうしかせい"
+      },
+      solarTerm: {
+        "小寒": "しょうかん", "大寒": "だいかん", "立春": "りっしゅん", "雨水": "うすい",
+        "啓蟄": "けいちつ", "春分": "しゅんぶん", "清明": "せいめい", "穀雨": "こくう",
+        "立夏": "りっか", "小満": "しょうまん", "芒種": "ぼうしゅ", "夏至": "げし",
+        "小暑": "しょうしょ", "大暑": "たいしょ", "立秋": "りっしゅう", "処暑": "しょしょ",
+        "白露": "はくろ", "秋分": "しゅうぶん", "寒露": "かんろ", "霜降": "そうこう",
+        "立冬": "りっとう", "小雪": "しょうせつ", "大雪": "たいせつ", "冬至": "とうじ"
+      }
+    };
+
+    const memos = {
+      rokuyo: {
+        "大安": "何事にも穏やかで、始める・整える行動に向く日。",
+        "赤口": "急ぎすぎず、火や刃物、細かな確認を意識すると安心な日。",
+        "先勝": "早めの行動や午前中の用事を意識すると流れを作りやすい日。",
+        "友引": "人との共有や相談に向く日。大事な連絡は丁寧に。",
+        "先負": "急がず、準備や確認を整えると過ごしやすい日。",
+        "仏滅": "大きく広げるより、整理や見直しに向きやすい日。"
+      },
+      choku: {
+        "建": "物事を建てる日。小さな開始や準備に向きます。",
+        "除": "取り除く日。掃除、整理、体のケアに向きます。",
+        "満": "物事が満ちる日。受け取り、準備の完了、祝いごとに向きます。",
+        "平": "平らかに整える日。無理なく穏やかに進めると安心です。",
+        "定": "定める日。予定や約束を固める前に確認を丁寧に。",
+        "執": "守り続ける日。継続中のことを整えるのに向きます。",
+        "破": "変化が出やすい日。契約や約束は確認を増やすと安心です。",
+        "危": "慎重さを意識する日。移動や作業は余白を持つと安心です。",
+        "成": "物事が成る日。仕上げや形にする行動に向きます。",
+        "納": "納める日。片付け、受け取り、区切りに向きます。",
+        "開": "開く日。知らせる、広げる、外へ出す行動に向きます。",
+        "閉": "閉じる日。広げるより内側の整理や休息に向きます。"
+      },
+      shuku: {
+        "心": "気持ちや関係性を丁寧に扱うと整いやすい日。",
+        "星": "表に出すことより、足元の確認を意識すると安心な日。"
+      },
+      kyusei: {
+        "一白水星": "流れを読み、柔らかく調整する意識が合いやすい日。",
+        "二黒土星": "足元を固め、日常の整えを進めやすい日。",
+        "三碧木星": "動き出しや発信のきっかけを作りやすい日。",
+        "四緑木星": "連絡、相談、調整を丁寧に進めやすい日。",
+        "五黄土星": "無理に動かず、中心を整える意識が大切な日。",
+        "六白金星": "段取りや責任ある判断を整えやすい日。",
+        "七赤金星": "会話や楽しみを通じて流れを作りやすい日。",
+        "八白土星": "切り替えや見直しを意識しやすい日。",
+        "九紫火星": "見える化、整理、伝えることに意識が向きやすい日。"
+      },
+      solarTerm: {
+        "夏至": "昼の長さが極まるころ。活動と休息のバランスを意識したい時期。",
+        "小暑": "暑さが本格化し始めるころ。体調と余白を大切にしたい時期。",
+        "大暑": "暑さが深まるころ。無理を避け、整える時間を持つと安心です。"
+      },
+      lunar: {
+        moonAge: "月の満ち欠けの目安。行動量や休息のリズムを見る参考になります。",
+        lunarDate: "旧暦の日付。季節感や昔ながらの暦のリズムを見る手がかりです。"
+      }
+    };
+
     const monthParts = {
       "正": 1, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5,
       "六": 6, "七": 7, "八": 8, "九": 9, "十": 10,
@@ -1817,7 +2017,12 @@
       4: 6, 7: 6, 10: 6, 1: 6
     };
 
-    const shinkichiIndexes = new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 23, 24, 25, 26, 27, 30, 33, 35, 36, 37, 39, 40, 42, 43, 45, 48, 51, 52, 54, 55, 57, 58, 59]);
+    const shinkichiNames = new Set([
+      "甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉",
+      "丙子", "丁丑", "己卯", "庚辰", "辛巳", "壬午", "乙酉", "丁亥", "戊子", "己丑",
+      "庚寅", "辛卯", "甲午", "丁酉", "己亥", "庚子", "辛丑", "癸卯", "甲辰", "丙午",
+      "丁未", "己酉", "壬子", "乙卯", "丙辰", "戊午", "己未", "辛酉", "壬戌", "癸亥"
+    ]);
     const tennonNames = new Set(["甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己卯", "庚辰", "辛巳", "壬午", "癸未", "己酉", "庚戌", "辛亥", "壬子", "癸丑"]);
     const daimyoNames = new Set(["己巳", "庚午", "辛未", "壬申", "癸酉", "丁丑", "己卯", "壬午", "甲申", "丁亥", "壬辰", "乙未", "壬寅", "甲辰", "乙巳", "丙午", "丁未", "己酉", "庚戌", "辛亥", "丙辰", "戊午", "己未", "庚申", "辛酉"]);
     const bloodAvoidBranches = [1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 0];
@@ -1845,31 +2050,42 @@
       "2026-01-01", "2026-01-06", "2026-02-04", "2026-02-17",
       "2026-03-05", "2026-03-20", "2026-04-04", "2026-04-17",
       "2026-05-05", "2026-05-24", "2026-06-05", "2026-06-21",
-      "2026-07-07", "2026-07-20", "2026-08-07", "2026-09-23",
+      "2026-06-29", "2026-07-07", "2026-07-20", "2026-08-07", "2026-09-23",
       "2026-10-08", "2026-11-07", "2026-12-07", "2026-12-22"
     ];
 
     const verificationResults = {
       "2026-01-01": {
-        memo: "参照: 日暦 https://higoyo.me/y26m1d1/ / 暦職人 https://koyomishokunin.com/20260101_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/1/1/2026 。選日は外部が一粒万倍日・不成就日・大土/大犯土、アプリは神吉日を余分に含む。",
+        memo: "参照: 日暦 https://higoyo.me/y26m1d1/ / 暦職人 https://koyomishokunin.com/20260101_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/1/1/2026 。選日は外部が一粒万倍日・不成就日・大土/大犯土。",
         fields: {
           rokuyo: { external: "大安", judgment: "OK" },
           choku: { external: "閉", judgment: "OK" },
           eto: { external: "乙亥", judgment: "OK" },
           kyusei: { external: "三碧木星", judgment: "OK" },
           shuku: { external: "井", judgment: "OK" },
-          senjitsu: { external: "一粒万倍日 / 不成就日 / 大土（大犯土）", judgment: "NG" }
+          senjitsu: { external: "一粒万倍日 / 不成就日 / 大土（大犯土）", judgment: "OK" }
         }
       },
       "2026-03-05": {
-        memo: "参照: 日暦 https://higoyo.me/y26m3d5/ / 暦職人 https://koyomishokunin.com/20260305_koyomi/ / mykoyomi https://www.mykoyomi.com/days/2026-03-05/ / 計算サイト https://www.calc-site.com/search_dates/3/5/2026 。九星は日家九星で照合。選日は外部が天赦日・一粒万倍日・寅の日・三隣亡・小土/小犯土・帰忌日、アプリは神吉日を余分に含む。",
+        memo: "参照: 日暦 https://higoyo.me/y26m3d5/ / 暦職人 https://koyomishokunin.com/20260305_koyomi/ / mykoyomi https://www.mykoyomi.com/days/2026-03-05/ / 計算サイト https://www.calc-site.com/search_dates/3/5/2026 。九星は日家九星で照合。選日は外部が天赦日・一粒万倍日・寅の日・三隣亡・小土/小犯土・帰忌日。",
         fields: {
           rokuyo: { external: "大安", judgment: "OK" },
           choku: { external: "閉", judgment: "OK" },
           eto: { external: "戊寅", judgment: "OK" },
           kyusei: { external: "三碧木星", judgment: "OK" },
           shuku: { external: "角", judgment: "OK" },
-          senjitsu: { external: "天赦日 / 一粒万倍日 / 寅の日 / 三隣亡 / 小土（小犯土） / 帰忌日", judgment: "NG" }
+          senjitsu: { external: "天赦日 / 一粒万倍日 / 寅の日 / 三隣亡 / 小土（小犯土） / 帰忌日", judgment: "OK" }
+        }
+      },
+      "2026-06-29": {
+        memo: "参照: 日暦 https://higoyo.me/y26m6d29/ / 暦職人 https://koyomishokunin.com/20260629_koyomi/ 。暦注下段は該当なし、選日は大土のみ。神吉日は含めない。",
+        fields: {
+          rokuyo: { external: "先勝", judgment: "OK" },
+          choku: { external: "定", judgment: "OK" },
+          eto: { external: "甲戌", judgment: "OK" },
+          kyusei: { external: "八白土星", judgment: "OK" },
+          shuku: { external: "心", judgment: "OK" },
+          senjitsu: { external: "大土（大犯土）", judgment: "OK" }
         }
       },
       "2026-05-24": {
@@ -1919,6 +2135,56 @@
         day: "numeric",
         weekday: "long"
       }).format(date);
+    }
+
+    function withReading(value, reading) {
+      return reading ? `${value}（${reading}）` : value;
+    }
+
+    function etoReading(name) {
+      if (!name || name.length < 2) return "";
+      const stem = name[0];
+      const branch = name.slice(1);
+      const stemReading = stemReadings[stem];
+      const branchReading = branchReadings[branch];
+      return stemReading && branchReading ? `${stemReading}${branchReading}` : "";
+    }
+
+    function etoMemo(name) {
+      const specific = {
+        "庚申": "見直し・整理・仕組み化を意識しやすい日。",
+        "甲戌": "まっすぐ始める力と、守りを固める意識が重なりやすい日。",
+        "甲午": "勢いを活かしつつ、無理なく進める順番を整えたい日。"
+      };
+      if (specific[name]) return specific[name];
+      return "その日の干支。行動の雰囲気や選日の判定を見る手がかりです。";
+    }
+
+    function memoFor(type, value) {
+      return memos[type]?.[value] || "";
+    }
+
+    function setKoyomiField(valueId, memoId, value, reading, memo) {
+      document.getElementById(valueId).textContent = withReading(value, reading);
+      document.getElementById(memoId).textContent = memo || "";
+    }
+
+    function makeKoyomiMeta(label, value, memo) {
+      const item = document.createElement("div");
+      item.className = "koyomi-meta-item";
+      const labelEl = document.createElement("p");
+      labelEl.className = "label";
+      labelEl.textContent = label;
+      const valueEl = document.createElement("p");
+      valueEl.className = "koyomi-meta-value";
+      valueEl.textContent = value;
+      const memoEl = document.createElement("p");
+      memoEl.className = "koyomi-memo";
+      memoEl.textContent = memo || "";
+      item.appendChild(labelEl);
+      item.appendChild(valueEl);
+      item.appendChild(memoEl);
+      return item;
     }
 
     function inSupportedRange(value) {
@@ -2123,7 +2389,7 @@
       if (tennonNames.has(eto.name)) notes.push("天恩日");
       if (daimyoNames.has(eto.name)) notes.push("大明日");
       if (bosonichiBranchesByMonth[solarMonth]?.includes(branch)) notes.push("母倉日");
-      if (shinkichiIndexes.has(eto.index)) notes.push("神吉日");
+      if (shinkichiNames.has(eto.name)) notes.push("神吉日");
       if (fujobijuDays[lunar.month]?.includes(lunar.day)) notes.push("不成就日");
       if (sanrinboBranches[monthBranch] === branch) notes.push("三隣亡");
       if ((monthBranch + branch) % 6 === 0) notes.push("凶会日");
@@ -2501,27 +2767,65 @@
       list.appendChild(li);
     }
 
-    function renderBreakdownList(id, items, fallback) {
-      const list = document.getElementById(id);
+    function factorLabel(item) {
+      return item.group === "選日・期間" ? item.name : `${item.group}：${item.name}`;
+    }
+
+    function factorItems(breakdownItems, positive) {
+      return breakdownItems
+        .filter(item => positive ? item.value > 0 : item.value < 0)
+        .sort((a, b) => positive ? b.value - a.value : a.value - b.value);
+    }
+
+    function renderFactorItems(list, items, emptyText, options = {}) {
       list.innerHTML = "";
-      const values = items.slice(0, 3);
-      if (!values.length) {
+      const visibleLimit = options.visibleLimit || 3;
+      const visibleItems = items.slice(0, visibleLimit);
+      const hiddenItems = items.slice(visibleLimit);
+      if (!visibleItems.length) {
         const li = document.createElement("li");
-        li.textContent = fallback;
+        li.className = "empty";
+        li.textContent = emptyText;
         list.appendChild(li);
         return;
       }
-      values.forEach(item => {
+      visibleItems.forEach(item => {
         const li = document.createElement("li");
         const name = document.createElement("span");
         const value = document.createElement("span");
-        name.textContent = `${item.group}・${item.name}`;
+        name.textContent = factorLabel(item);
         value.className = `value ${item.value > 0 ? "plus" : "minus"}`;
         value.textContent = `${item.value > 0 ? "+" : ""}${item.value}`;
         li.appendChild(name);
         li.appendChild(value);
         list.appendChild(li);
       });
+      if (!hiddenItems.length) return;
+
+      const li = document.createElement("li");
+      li.style.display = "block";
+      const details = document.createElement("details");
+      details.className = "more-actions";
+      const summary = document.createElement("summary");
+      summary.textContent = `残り${hiddenItems.length}件を見る`;
+      const nested = document.createElement("ul");
+      nested.className = "breakdown-list";
+      renderFactorItems(nested, hiddenItems, emptyText, { visibleLimit: hiddenItems.length });
+      details.appendChild(summary);
+      details.appendChild(nested);
+      li.appendChild(details);
+      list.appendChild(li);
+    }
+
+    function renderFactorList(id, items, emptyText, options = {}) {
+      renderFactorItems(document.getElementById(id), items, emptyText, options);
+    }
+
+    function createFactorList(items, emptyText, options = {}) {
+      const ul = document.createElement("ul");
+      ul.className = "breakdown-list";
+      renderFactorItems(ul, items, emptyText, options);
+      return ul;
     }
 
     const themeDefinitions = {
@@ -2621,36 +2925,6 @@
       }).format(date);
     }
 
-    function topFactors(breakdownItems, positive) {
-      return breakdownItems
-        .filter(item => positive ? item.value > 0 : item.value < 0)
-        .sort((a, b) => positive ? b.value - a.value : a.value - b.value)
-        .slice(0, 2);
-    }
-
-    function renderFactorList(items, emptyText) {
-      const ul = document.createElement("ul");
-      ul.className = "breakdown-list";
-      if (!items.length) {
-        const li = document.createElement("li");
-        li.textContent = emptyText;
-        ul.appendChild(li);
-        return ul;
-      }
-      items.forEach(item => {
-        const li = document.createElement("li");
-        const name = document.createElement("span");
-        const value = document.createElement("span");
-        name.textContent = item.name;
-        value.className = `value ${item.value > 0 ? "plus" : "minus"}`;
-        value.textContent = `${item.value > 0 ? "+" : ""}${item.value}`;
-        li.appendChild(name);
-        li.appendChild(value);
-        ul.appendChild(li);
-      });
-      return ul;
-    }
-
     function rankingRecord(date, purpose) {
       const data = buildNotes(date);
       if (!data) return null;
@@ -2664,31 +2938,13 @@
         rawScore: scoreValues.rawScore,
         rankScore: scoreValues.rankScore,
         comment: dayPhrase(scoreValues.displayScore, goodNotes, warnNotes, purpose),
-        plusItems: topFactors(breakdown, true),
-        minusItems: topFactors(breakdown, false)
+        plusItems: factorItems(breakdown, true),
+        minusItems: factorItems(breakdown, false)
       };
     }
 
     function renderNextBestFactors(items) {
-      const list = document.getElementById("nextBestFactors");
-      list.innerHTML = "";
-      if (!items.length) {
-        const li = document.createElement("li");
-        li.textContent = "大きな加点要素はありません";
-        list.appendChild(li);
-        return;
-      }
-      items.forEach(item => {
-        const li = document.createElement("li");
-        const name = document.createElement("span");
-        const value = document.createElement("span");
-        name.textContent = item.name;
-        value.className = "value plus";
-        value.textContent = `+${item.value}`;
-        li.appendChild(name);
-        li.appendChild(value);
-        list.appendChild(li);
-      });
+      renderFactorList("nextBestFactors", items, "大きな加点要素はありません");
     }
 
     function renderNextBestCard(baseDate, purpose) {
@@ -2784,7 +3040,7 @@
         plusLabel.className = "label";
         plusLabel.textContent = "主な加点";
         plus.appendChild(plusLabel);
-        plus.appendChild(renderFactorList(record.plusItems, "なし"));
+        plus.appendChild(createFactorList(record.plusItems, "なし"));
 
         const minus = document.createElement("div");
         minus.className = "mini-panel caution";
@@ -2792,7 +3048,7 @@
         minusLabel.className = "label";
         minusLabel.textContent = "主な減点";
         minus.appendChild(minusLabel);
-        minus.appendChild(renderFactorList(record.minusItems, "なし"));
+        minus.appendChild(createFactorList(record.minusItems, "なし"));
 
         factors.appendChild(plus);
         factors.appendChild(minus);
@@ -2981,6 +3237,38 @@
       });
     }
 
+    function renderKoyomiSummary(data) {
+      const leapText = data.lunar.isLeap ? "閏" : "";
+      const lunarValue = `旧暦 ${leapText}${data.lunar.month}月${data.lunar.day}日`;
+      const moonAgeValue = `月齢 ${data.moonAge.toFixed(1)}`;
+      setKoyomiField("rokuyo", "rokuyoMemo", data.rokuyo, readings.rokuyo[data.rokuyo], memoFor("rokuyo", data.rokuyo));
+      setKoyomiField("choku", "chokuMemo", data.choku, readings.choku[data.choku], memoFor("choku", data.choku));
+      setKoyomiField("eto", "etoMemo", data.eto.name, etoReading(data.eto.name), etoMemo(data.eto.name));
+      setKoyomiField("dayKyusei", "dayKyuseiMemo", data.dayKyusei, readings.kyusei[data.dayKyusei], memoFor("kyusei", data.dayKyusei));
+      setKoyomiField("yearKyusei", "yearKyuseiMemo", data.yearKyusei, readings.kyusei[data.yearKyusei], memoFor("kyusei", data.yearKyusei));
+      document.getElementById("lunar").textContent = `${lunarValue} / ${moonAgeValue}`;
+
+      const meta = document.getElementById("koyomiMeta");
+      meta.innerHTML = "";
+      meta.appendChild(makeKoyomiMeta("二十八宿", withReading(data.shuku, readings.shuku[data.shuku]), memoFor("shuku", data.shuku) || "その日の細かな雰囲気を見る補助情報です。"));
+      meta.appendChild(makeKoyomiMeta("二十四節気", withReading(data.solar.currentTerm.name, readings.solarTerm[data.solar.currentTerm.name]), memoFor("solarTerm", data.solar.currentTerm.name) || "季節の移り変わりを見る目安です。"));
+      meta.appendChild(makeKoyomiMeta("月齢", moonAgeValue, memos.lunar.moonAge));
+    }
+
+    function renderEmptyKoyomiSummary() {
+      [
+        ["rokuyo", "rokuyoMemo"],
+        ["choku", "chokuMemo"],
+        ["eto", "etoMemo"],
+        ["dayKyusei", "dayKyuseiMemo"],
+        ["yearKyusei", "yearKyuseiMemo"]
+      ].forEach(([valueId, memoId]) => setKoyomiField(valueId, memoId, "--", "", ""));
+      document.getElementById("lunar").textContent = "";
+      document.getElementById("koyomiMeta").innerHTML = "";
+      renderFactorList("todayPlusFactors", [], "加点要素を表示できません");
+      renderFactorList("todayMinusFactors", [], "注意要素を表示できません");
+    }
+
     function escapeHtml(value) {
       return String(value).replace(/[&<>"']/g, char => ({
         "&": "&amp;",
@@ -3072,10 +3360,7 @@
 
     function showUnavailable(message) {
       document.getElementById("date").textContent = message || "";
-      ["rokuyo", "choku", "eto", "dayKyusei", "yearKyusei"].forEach(id => {
-        document.getElementById(id).textContent = "--";
-      });
-      document.getElementById("lunar").textContent = "";
+      renderEmptyKoyomiSummary();
       renderEmptyConclusion(
         "暦データがありません",
         "旧暦を取得できないため、今日の結論は表示していません。",
@@ -3099,10 +3384,7 @@
 
       if (!inSupportedRange(inputValue)) {
         document.getElementById("date").textContent = formatDate(date);
-        ["rokuyo", "choku", "eto", "dayKyusei", "yearKyusei"].forEach(id => {
-          document.getElementById(id).textContent = "--";
-        });
-        document.getElementById("lunar").textContent = "";
+        renderEmptyKoyomiSummary();
         renderEmptyConclusion(
           "対応範囲外です",
           "1940年1月1日から2099年12月31日の範囲で指定してください。",
@@ -3132,9 +3414,9 @@
       const warnNotes = data.notes.filter(note => note.kind === "warn");
       const normalNotes = displayNotes(data.notes, normalDisplayNames);
       const detailNotes = displayNotes(data.notes, detailDisplayNames);
-      const leapText = data.lunar.isLeap ? "閏" : "";
       const forcedWarnings = purposeWarnings(data.notes, purpose);
       const isMedicalPurpose = medicalPurposeIds.includes(purpose.id);
+      const todayBreakdown = purposeScoreBreakdown(data.notes, purpose);
       const recommendationItems = isMedicalPurpose
         ? [purposeActionText(purpose, score)]
         : score >= 40
@@ -3144,15 +3426,12 @@
       const categoryItems = categoryScoreItems(data.notes);
 
       document.getElementById("date").textContent = formatDate(date);
-      document.getElementById("rokuyo").textContent = data.rokuyo;
-      document.getElementById("choku").textContent = data.choku;
-      document.getElementById("eto").textContent = data.eto.name;
-      document.getElementById("dayKyusei").textContent = data.dayKyusei.replace("星", "");
-      document.getElementById("yearKyusei").textContent = data.yearKyusei.replace("星", "");
-      document.getElementById("lunar").textContent = `旧暦 ${leapText}${data.lunar.month}月${data.lunar.day}日 / 二十八宿 ${data.shuku} / 二十四節気 ${data.solar.currentTerm.name} / 月齢 ${data.moonAge.toFixed(1)}`;
+      renderKoyomiSummary(data);
       document.getElementById("medicalNotice").classList.toggle("is-visible", isMedicalPurpose);
 
       renderConclusion(score, categoryItems, purpose);
+      renderFactorList("todayPlusFactors", factorItems(todayBreakdown, true), "大きな加点要素はありません");
+      renderFactorList("todayMinusFactors", factorItems(todayBreakdown, false), "大きな注意要素はありません");
       renderCategoryOverview(categoryItems, purpose.id);
       renderNextBestCard(date, purpose);
       renderFutureRanking(date, purpose);
