@@ -1901,6 +1901,7 @@
       "巳の日": { kind: "good", text: "財運や芸事の願いに縁があるとされる日。", weights: { total: 5, money: 9, beauty: 5, treat: 4 } },
       "己巳の日": { kind: "good", text: "巳の日の中でも金運の意味が強い日。", weights: { total: 8, money: 14, shopping: 6, treat: 5 } },
       "神吉日": { kind: "good", text: "神社参拝や祈願に良いとされる日。", weights: { total: 3, relationship: 4, travel: 3, rest: 3 } },
+      "重日": { kind: "neutral", text: "吉事も凶事も重なるとされる日。祝い事には吉、婚礼など重なることを避けたい事柄には注意。", weights: { total: 0 } },
       "不成就日": { kind: "warn", text: "物事が成就しにくいとされる日。", weights: { total: -12, contract: -11, marriage: -12, work: -6, moving: -8 } },
       "三隣亡": { kind: "warn", text: "建築や移転に注意とされる日。", weights: { total: -5, moving: -14, contract: -5 } },
       "凶会日": { kind: "warn", text: "物事の重なりに注意とされる日。", weights: { total: -4, contract: -6, travel: -5, surgery: -5 } },
@@ -1926,7 +1927,7 @@
     };
 
     const normalDisplayNames = new Set(["大安", "赤口", "先勝", "友引", "先負", "仏滅", "建", "除", "満", "平", "定", "執", "破", "危", "成", "納", "開", "閉", "一粒万倍日", "天赦日", "不成就日", "寅の日", "巳の日", "己巳の日", "天一天上", "土用", "土用（間日）", "月破", "三隣亡", "天恩日", "母倉日", "大明日", "甲子の日"]);
-    const detailDisplayNames = new Set(["神吉日", "凶会日", "血忌日", "狼籍日", "大土", "小土", "帰忌日", "月徳日", "受死日", "十死日", "八専", "八専（間日）"]);
+    const detailDisplayNames = new Set(["神吉日", "重日", "凶会日", "血忌日", "狼籍日", "大土", "小土", "帰忌日", "月徳日", "受死日", "十死日", "八専", "八専（間日）"]);
     const directionAffinities = {
       "大安": { start: 2, grow: 1, connect: 1 },
       "友引": { connect: 3, start: 1 },
@@ -2019,10 +2020,16 @@
 
     const shinkichiNames = new Set([
       "甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉",
-      "丙子", "丁丑", "己卯", "庚辰", "辛巳", "壬午", "乙酉", "丁亥", "戊子", "己丑",
-      "庚寅", "辛卯", "甲午", "丁酉", "己亥", "庚子", "辛丑", "癸卯", "甲辰", "丙午",
+      "丙子", "丁丑", "己卯", "庚辰", "辛巳", "壬午", "乙酉", "戊子",
+      "辛卯", "甲午", "丁酉", "己亥", "庚子", "辛丑", "癸卯", "甲辰", "丙午",
       "丁未", "己酉", "壬子", "乙卯", "丙辰", "戊午", "己未", "辛酉", "壬戌", "癸亥"
     ]);
+    const kuenichiNamesBySolarMonth = {
+      // 凶会日は資料差が出やすいため、誤判定を生む簡易式ではなく検証済み対応表だけで判定する。
+    };
+    const shukuRules = {
+      "昴": { kind: "good", text: "神事や祝い事に良いとされる宿。", weights: { total: 4 } }
+    };
     const tennonNames = new Set(["甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己卯", "庚辰", "辛巳", "壬午", "癸未", "己酉", "庚戌", "辛亥", "壬子", "癸丑"]);
     const daimyoNames = new Set(["己巳", "庚午", "辛未", "壬申", "癸酉", "丁丑", "己卯", "壬午", "甲申", "丁亥", "壬辰", "乙未", "壬寅", "甲辰", "乙巳", "丙午", "丁未", "己酉", "庚戌", "辛亥", "丙辰", "戊午", "己未", "庚申", "辛酉"]);
     const bloodAvoidBranches = [1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 0];
@@ -2050,7 +2057,7 @@
       "2026-01-01", "2026-01-06", "2026-02-04", "2026-02-17",
       "2026-03-05", "2026-03-20", "2026-04-04", "2026-04-17",
       "2026-05-05", "2026-05-24", "2026-06-05", "2026-06-21",
-      "2026-06-29", "2026-07-07", "2026-07-20", "2026-08-07", "2026-09-23",
+      "2026-06-29", "2026-07-07", "2026-07-12", "2026-07-14", "2026-07-15", "2026-07-20", "2026-08-07", "2026-09-23",
       "2026-10-08", "2026-11-07", "2026-12-07", "2026-12-22"
     ];
 
@@ -2088,6 +2095,44 @@
           senjitsu: { external: "大土（大犯土）", judgment: "OK" }
         }
       },
+      "2026-07-12": {
+        memo: "参照: 日暦 https://higoyo.me/y26m7d12/ / 暦職人 https://koyomishokunin.com/20260712_koyomi/ 。外部は大明日・重日・十方暮。神吉日と凶会日は含めない。重日は総合点への加減点なし。",
+        fields: {
+          rokuyo: { external: "友引", judgment: "OK" },
+          choku: { external: "定", judgment: "OK" },
+          eto: { external: "丁亥", judgment: "OK" },
+          kyusei: { external: "四緑木星", judgment: "OK" },
+          yearKyusei: { external: "一白水星", judgment: "OK" },
+          shuku: { external: "昴", judgment: "OK" },
+          senjitsu: { external: "大明日 / 重日 / 十方暮", judgment: "OK" },
+          score: { external: "76", judgment: "OK" }
+        }
+      },
+      "2026-07-14": {
+        memo: "参照: 日暦 https://higoyo.me/y26m7d14/ / 暦職人 https://koyomishokunin.com/20260714_koyomi/ 。日九星は二黒土星、年九星は一白水星。己丑は神吉日として扱わない。",
+        fields: {
+          rokuyo: { external: "赤口", judgment: "OK" },
+          choku: { external: "破", judgment: "OK" },
+          eto: { external: "己丑", judgment: "OK" },
+          kyusei: { external: "二黒土星", judgment: "OK" },
+          yearKyusei: { external: "一白水星", judgment: "OK" },
+          shuku: { external: "觜", judgment: "OK" },
+          senjitsu: { external: "十方暮 / 十死日 / 復日", judgment: "要確認" }
+        }
+      },
+      "2026-07-15": {
+        memo: "参照: 日暦 https://higoyo.me/y26m7d15/ / 暦職人 https://koyomishokunin.com/20260715_koyomi/ 。日干支は庚寅。寅の日・十方暮に該当し、神吉日は含めない。",
+        fields: {
+          rokuyo: { external: "先勝", judgment: "OK" },
+          choku: { external: "危", judgment: "OK" },
+          eto: { external: "庚寅", judgment: "OK" },
+          kyusei: { external: "一白水星", judgment: "OK" },
+          yearKyusei: { external: "一白水星", judgment: "OK" },
+          shuku: { external: "参", judgment: "OK" },
+          senjitsu: { external: "寅の日 / 十方暮 / 三伏（初伏）", judgment: "要確認" },
+          score: { external: "59", judgment: "OK" }
+        }
+      },
       "2026-05-24": {
         memo: "参照: 日暦 https://higoyo.me/y26m5d24/ / 暦職人 https://koyomishokunin.com/20260524_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/5/24/2026 。主要項目は一致。",
         fields: {
@@ -2100,7 +2145,7 @@
         }
       },
       "2026-12-22": {
-        memo: "参照: 暦職人 https://koyomishokunin.com/20261222_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/12/22/2026 / 便利ジャパン https://www.benri.jp/calendar/etomonth/?month=12&year=2026 。九星は日家九星で照合。選日は外部が大土・神吉日・血忌日・天火日・狼籍日、アプリは凶会日と月破を余分に含み天火日を未収録。",
+        memo: "参照: 暦職人 https://koyomishokunin.com/20261222_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/12/22/2026 / 便利ジャパン https://www.benri.jp/calendar/etomonth/?month=12&year=2026 。九星は日家九星で照合。選日は外部が大土・神吉日・血忌日・天火日・狼籍日、アプリは月破を余分に含み天火日を未収録。",
         fields: {
           rokuyo: { external: "赤口", judgment: "OK" },
           choku: { external: "破", judgment: "OK" },
@@ -2313,7 +2358,7 @@
       const value = dateToInputValue(date);
       const spring = dateToInputValue(solarTermDateJst(year, solarTerms.find(term => term.name === "立春")));
       const kyuseiYear = value < spring ? year - 1 : year;
-      return kyuseiNames[((11 - kyuseiYear) % 9 + 9) % 9];
+      return kyuseiNames[((10 - kyuseiYear) % 9 + 9) % 9];
     }
 
     function nearestKoshiDate(termDate) {
@@ -2390,9 +2435,10 @@
       if (daimyoNames.has(eto.name)) notes.push("大明日");
       if (bosonichiBranchesByMonth[solarMonth]?.includes(branch)) notes.push("母倉日");
       if (shinkichiNames.has(eto.name)) notes.push("神吉日");
+      if (branch === 5 || branch === 11) notes.push("重日");
       if (fujobijuDays[lunar.month]?.includes(lunar.day)) notes.push("不成就日");
       if (sanrinboBranches[monthBranch] === branch) notes.push("三隣亡");
-      if ((monthBranch + branch) % 6 === 0) notes.push("凶会日");
+      if (kuenichiNamesBySolarMonth[solarMonth]?.includes(eto.name)) notes.push("凶会日");
       if (gettokuStems[solarMonth - 1] === stem) notes.push("月徳日");
       if (jushibiBranches[solarMonth - 1] === branch) notes.push("受死日");
       if (jisshibiBranches[solarMonth - 1] === branch) notes.push("十死日");
@@ -2433,12 +2479,13 @@
       const dayKyusei = getDayKyusei(date);
       const yearKyusei = getYearKyusei(date);
       const shuku = getShuku(date);
+      const shukuRule = shukuRules[shuku] || { kind: "neutral", text: "日々巡る二十八宿。細かな日柄の補助情報です。", weights: { total: 1 } };
       const moonAge = getMoonAge(date);
 
       const notes = [
         { name: rokuyo, group: "六曜", ...baseRules[rokuyo] },
         { name: choku, group: "十二直", ...baseRules[choku] },
-        { name: shuku, group: "二十八宿", kind: "neutral", text: "日々巡る二十八宿。細かな日柄の補助情報です。", weights: { total: 1 } },
+        { name: shuku, group: "二十八宿", ...shukuRule },
         { name: eto.name, group: "日干支", kind: "neutral", text: "その日の干支。選日や月破などの判定にも使います。", weights: { total: 0 } },
         { name: dayKyusei, group: "日九星", kind: "neutral", text: "その日の九星。日々の暦サイトとの照合対象です。", weights: { total: 0 } },
         { name: yearKyusei, group: "年九星", kind: "neutral", text: "立春を年替わりとする年の九星。補助情報として扱います。", weights: { total: 0 } },
