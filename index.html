@@ -1841,10 +1841,6 @@
         "開": "開く日。知らせる、広げる、外へ出す行動に向きます。",
         "閉": "閉じる日。広げるより内側の整理や休息に向きます。"
       },
-      shuku: {
-        "心": "気持ちや関係性を丁寧に扱うと整いやすい日。",
-        "星": "表に出すことより、足元の確認を意識すると安心な日。"
-      },
       kyusei: {
         "一白水星": "流れを読み、柔らかく調整する意識が合いやすい日。",
         "二黒土星": "足元を固め、日常の整えを進めやすい日。",
@@ -1967,7 +1963,8 @@
       "三隣亡": { move: -4, start: -2 },
       "帰忌日": { move: -3, rest: 1 },
       "八専": { connect: -2, act: -1, rest: 1 },
-      "八専（間日）": { rest: 1 }
+      "八専（間日）": { rest: 1 },
+      "虚": { rest: 2, start: -1, act: -1, connect: -1, move: -1 }
     };
 
     const solarTerms = [
@@ -2018,17 +2015,166 @@
       4: 6, 7: 6, 10: 6, 1: 6
     };
 
+    // 神吉日は日干支のみで決まる33日。異なる資料の一覧を混ぜず、この33干支を一組として採用する。
     const shinkichiNames = new Set([
-      "甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉",
-      "丙子", "丁丑", "己卯", "庚辰", "辛巳", "壬午", "乙酉", "戊子",
-      "辛卯", "甲午", "丁酉", "己亥", "庚子", "辛丑", "癸卯", "甲辰", "丙午",
-      "丁未", "己酉", "壬子", "乙卯", "丙辰", "戊午", "己未", "辛酉", "壬戌", "癸亥"
+      "乙丑", "丁卯", "己巳", "庚午", "壬申", "癸酉",
+      "丁丑", "己卯", "壬午", "甲申", "乙酉", "戊子",
+      "辛卯", "甲午", "丙申", "丁酉", "己亥", "庚子",
+      "辛丑", "癸卯", "乙巳", "丙午", "丁未", "戊申",
+      "己酉", "辛亥", "壬子", "乙卯", "戊午", "己未",
+      "庚申", "辛酉", "癸亥"
     ]);
     const kuenichiNamesBySolarMonth = {
       // 凶会日は資料差が出やすいため、誤判定を生む簡易式ではなく検証済み対応表だけで判定する。
     };
+    // 二十八宿の用途別吉凶は、こよみ博物館と大崎八幡宮の解説を基準に現代の用途へ控えめに対応付ける。
+    // 資料差がある用途は総合評価を強めず、説明文と用途別スコアを優先する。
     const shukuRules = {
-      "昴": { kind: "good", text: "神事や祝い事に良いとされる宿。", weights: { total: 4 } }
+      "角": {
+        kind: "good",
+        text: "婚礼、建築、旅立ちなど前へ進める行動に向く一方、葬送は控えめにしたい宿。",
+        weights: { total: 2, marriage: 4, moving: 3, travel: 2, work: 2 }
+      },
+      "亢": {
+        kind: "neutral",
+        text: "縁を結ぶことや準備、受け取りには向く一方、建築、移転、遠出は慎重にしたい宿。",
+        weights: { total: 0, marriage: 3, relationship: 2, contract: 2, moving: -3, travel: -3 }
+      },
+      "氐": {
+        kind: "good",
+        text: "婚礼、入居、開店など暮らしの基盤を整えることに向く一方、衣類の仕立ては控えめにしたい宿。",
+        weights: { total: 1, marriage: 3, moving: 3, work: 3, beauty: -2 }
+      },
+      "房": {
+        kind: "good",
+        text: "婚礼、建築、住まいの整え、理髪など祝いと身支度に向く宿。",
+        weights: { total: 4, marriage: 6, moving: 5, beauty: 4, relationship: 3, work: 2 }
+      },
+      "心": {
+        kind: "warn",
+        text: "祈りや静かな振り返りには向く一方、婚礼、建築、移転など大きな節目は慎重にしたい宿。",
+        weights: { total: -3, rest: 3, marriage: -6, moving: -5, work: -3, relationship: -2 }
+      },
+      "尾": {
+        kind: "good",
+        text: "婚礼、建築、開店、体の手入れを始めることに向く一方、衣類の仕立ては控えめにしたい宿。",
+        weights: { total: 2, marriage: 4, moving: 3, work: 3, hospital: 2, beauty: -2 }
+      },
+      "箕": {
+        kind: "good",
+        text: "庭や住まいを整えること、婚礼や身支度に向く一方、葬送は控えめにしたい宿。",
+        weights: { total: 2, moving: 3, marriage: 3, beauty: 2, work: 2 }
+      },
+      "斗": {
+        kind: "good",
+        text: "建築、収納、土地を整えることや手仕事に向く宿。",
+        weights: { total: 2, moving: 3, work: 3, beauty: 2 }
+      },
+      "牛": {
+        kind: "good",
+        text: "幅広い行動に穏やかな追い風があるとされる吉宿。大切な予定にも使いやすい宿。",
+        weights: { total: 4, work: 3, contract: 3, study: 2, marriage: 4, moving: 3, travel: 3, relationship: 2 }
+      },
+      "女": {
+        kind: "neutral",
+        text: "芸事や習い事、身支度には向く一方、造作、引越し、開店など大きく動くことは慎重にしたい宿。",
+        weights: { total: 0, study: 3, beauty: 2, moving: -3, work: -2 }
+      },
+      "虚": {
+        kind: "warn",
+        text: "学問や習い事始め、家族で穏やかに過ごすことには向く一方、相談・交渉、建築、婚礼、大きな積極行動は慎重にしたい宿。",
+        weights: { total: -3, study: 4, contract: -5, work: -2, marriage: -6, moving: -4, rest: 2 }
+      },
+      "危": {
+        kind: "warn",
+        text: "住まいの補修には用いられる一方、婚礼、移転、遠出、身支度は慎重にしたい宿。",
+        weights: { total: -2, work: 1, marriage: -5, moving: -4, travel: -3, beauty: -2 }
+      },
+      "室": {
+        kind: "good",
+        text: "婚礼、建築、引越し、井戸掘り、理髪や服薬など暮らしを整える行動に向く宿。",
+        weights: { total: 3, marriage: 4, moving: 4, beauty: 3, hospital: 2, work: 2 }
+      },
+      "壁": {
+        kind: "good",
+        text: "婚礼、旅行、建築や住まいの整えに向く一方、命名は慎重にしたい宿。",
+        weights: { total: 3, marriage: 4, travel: 3, moving: 3, work: 2 }
+      },
+      "奎": {
+        kind: "neutral",
+        text: "裁縫、建築、橋や井戸の整備、祈りに向く一方、開店や蔵開きは慎重にしたい宿。",
+        weights: { total: 1, beauty: 3, moving: 3, rest: 2, work: -2, contract: -2 }
+      },
+      "婁": {
+        kind: "good",
+        text: "婚礼、建築、衣類の仕立てや急ぎの用事に向く宿。",
+        weights: { total: 4, marriage: 6, moving: 4, beauty: 3, work: 3 }
+      },
+      "胃": {
+        kind: "neutral",
+        text: "建築、金銭の相談、人を支えることには向く一方、私的な大きな判断は丁寧に進めたい宿。",
+        weights: { total: 0, moving: 3, contract: 3, relationship: 2, work: 2, rest: -1 }
+      },
+      "昴": {
+        kind: "good",
+        text: "神仏への祈りや供養、婚礼など節目の行いに向く一方、造作や衣類の仕立ては慎重にしたい宿。",
+        weights: { total: 4, marriage: 4, relationship: 3, rest: 3, moving: -2, beauty: -2 }
+      },
+      "畢": {
+        kind: "good",
+        text: "神事、婚礼、建築、土地や橋を整えることに向く一方、衣類の仕立ては控えめにしたい宿。",
+        weights: { total: 3, marriage: 4, moving: 4, work: 3, beauty: -2 }
+      },
+      "觜": {
+        kind: "warn",
+        text: "入学や学び始めには向く一方、婚礼、契約、大きな決定や身支度は慎重にしたい宿。",
+        weights: { total: -3, study: 4, marriage: -5, contract: -3, work: -2, beauty: -3 }
+      },
+      "参": {
+        kind: "good",
+        text: "物を作ること、仕事を整えること、旅立ちに向く一方、葬送は控えめにしたい宿。",
+        weights: { total: 3, work: 4, contract: 2, travel: 4, study: 1 }
+      },
+      "井": {
+        kind: "good",
+        text: "神事、建築、井戸掘り、種まきなど基盤を作ることに向く一方、衣類の仕立ては控えめにしたい宿。",
+        weights: { total: 2, work: 3, moving: 3, rest: 2, beauty: -2 }
+      },
+      "鬼": {
+        kind: "good",
+        text: "参拝、学び、建築など幅広い行動に向く大吉宿。ただし婚礼は慎重にしたい宿。",
+        weights: { total: 4, work: 3, study: 3, moving: 3, travel: 2, relationship: 2, marriage: -6 }
+      },
+      "柳": {
+        kind: "warn",
+        text: "種まきや樹木の手入れには向く一方、建築、葬送、衣類の仕立ては慎重にしたい宿。",
+        weights: { total: -3, work: 1, moving: -4, beauty: -3 }
+      },
+      "星": {
+        kind: "warn",
+        text: "設備の見直しなどには向く一方、相談・交渉、婚礼、服薬開始、大きな対人予定は慎重にしたい宿。",
+        weights: { total: -3, work: 1, contract: -5, marriage: -6, hospital: -4, relationship: -4 }
+      },
+      "張": {
+        kind: "good",
+        text: "婚礼、祈願、開店、仕事の始まりなど晴れやかな節目に向く宿。",
+        weights: { total: 4, marriage: 6, work: 4, contract: 3, relationship: 4 }
+      },
+      "翼": {
+        kind: "warn",
+        text: "農作業や衣類の仕立てには向く一方、入学・試験、婚礼、交渉、高所の建築は慎重にしたい宿。",
+        weights: { total: -2, work: 2, beauty: 2, study: -4, contract: -4, marriage: -5, moving: -3 }
+      },
+      "軫": {
+        kind: "good",
+        text: "建築、土地の整え、婚礼、遠方への旅、入学や技芸の学びに向く宿。衣類については資料差があります。",
+        weights: { total: 3, moving: 4, marriage: 4, travel: 4, study: 3, contract: 2, beauty: 0 }
+      }
+    };
+    const defaultShukuRule = {
+      kind: "neutral",
+      text: "日々巡る二十八宿。用途ごとの吉凶を見る補助情報です。",
+      weights: { total: 0 }
     };
     const tennonNames = new Set(["甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己卯", "庚辰", "辛巳", "壬午", "癸未", "己酉", "庚戌", "辛亥", "壬子", "癸丑"]);
     const daimyoNames = new Set(["己巳", "庚午", "辛未", "壬申", "癸酉", "丁丑", "己卯", "壬午", "甲申", "丁亥", "壬辰", "乙未", "壬寅", "甲辰", "乙巳", "丙午", "丁未", "己酉", "庚戌", "辛亥", "丙辰", "戊午", "己未", "庚申", "辛酉"]);
@@ -2057,7 +2203,7 @@
       "2026-01-01", "2026-01-06", "2026-02-04", "2026-02-17",
       "2026-03-05", "2026-03-20", "2026-04-04", "2026-04-17",
       "2026-05-05", "2026-05-24", "2026-06-05", "2026-06-21",
-      "2026-06-29", "2026-07-07", "2026-07-12", "2026-07-14", "2026-07-15", "2026-07-20", "2026-08-07", "2026-09-23",
+      "2026-06-29", "2026-07-07", "2026-07-12", "2026-07-14", "2026-07-15", "2026-07-20", "2026-08-02", "2026-08-07", "2026-09-23",
       "2026-10-08", "2026-11-07", "2026-12-07", "2026-12-22"
     ];
 
@@ -2121,7 +2267,7 @@
         }
       },
       "2026-07-15": {
-        memo: "参照: 日暦 https://higoyo.me/y26m7d15/ / 暦職人 https://koyomishokunin.com/20260715_koyomi/ 。日干支は庚寅。寅の日・十方暮に該当し、神吉日は含めない。",
+        memo: "参照: 日暦 https://higoyo.me/y26m7d15/ / 暦職人 https://koyomishokunin.com/20260715_koyomi/ 。日干支は庚寅。寅の日・十方暮に該当し、神吉日は含めない。二十八宿の参は用途別ルールで評価する。",
         fields: {
           rokuyo: { external: "先勝", judgment: "OK" },
           choku: { external: "危", judgment: "OK" },
@@ -2129,8 +2275,19 @@
           kyusei: { external: "一白水星", judgment: "OK" },
           yearKyusei: { external: "一白水星", judgment: "OK" },
           shuku: { external: "参", judgment: "OK" },
-          senjitsu: { external: "寅の日 / 十方暮 / 三伏（初伏）", judgment: "要確認" },
-          score: { external: "59", judgment: "OK" }
+          senjitsu: { external: "寅の日 / 十方暮 / 三伏（初伏）", judgment: "要確認" }
+        }
+      },
+      "2026-08-02": {
+        memo: "参照: 日暦 https://higoyo.me/y26m8d2/ / 暦職人 https://koyomishokunin.com/20260802_koyomi/ 。日干支は戊申、二十八宿は虚、神吉日に該当。虚は学びと休息を用途別に加点し、相談・契約・婚礼・移転を注意として評価する。",
+        fields: {
+          rokuyo: { external: "先勝", judgment: "OK" },
+          choku: { external: "除", judgment: "OK" },
+          eto: { external: "戊申", judgment: "OK" },
+          kyusei: { external: "一白水星", judgment: "OK" },
+          yearKyusei: { external: "一白水星", judgment: "OK" },
+          shuku: { external: "虚", judgment: "OK" },
+          senjitsu: { external: "神吉日 / 天一天上 / 復日 / 土用（間日）", judgment: "要確認" }
         }
       },
       "2026-05-24": {
@@ -2205,7 +2362,16 @@
       return "その日の干支。行動の雰囲気や選日の判定を見る手がかりです。";
     }
 
+    function shukuRuleFor(name) {
+      return shukuRules[name] || defaultShukuRule;
+    }
+
+    function shukuMemo(name) {
+      return shukuRuleFor(name).text || "その日の細かな雰囲気を見る補助情報です。";
+    }
+
     function memoFor(type, value) {
+      if (type === "shuku") return shukuMemo(value);
       return memos[type]?.[value] || "";
     }
 
@@ -2479,7 +2645,7 @@
       const dayKyusei = getDayKyusei(date);
       const yearKyusei = getYearKyusei(date);
       const shuku = getShuku(date);
-      const shukuRule = shukuRules[shuku] || { kind: "neutral", text: "日々巡る二十八宿。細かな日柄の補助情報です。", weights: { total: 1 } };
+      const shukuRule = shukuRuleFor(shuku);
       const moonAge = getMoonAge(date);
 
       const notes = [
@@ -3297,7 +3463,7 @@
 
       const meta = document.getElementById("koyomiMeta");
       meta.innerHTML = "";
-      meta.appendChild(makeKoyomiMeta("二十八宿", withReading(data.shuku, readings.shuku[data.shuku]), memoFor("shuku", data.shuku) || "その日の細かな雰囲気を見る補助情報です。"));
+      meta.appendChild(makeKoyomiMeta("二十八宿", withReading(data.shuku, readings.shuku[data.shuku]), shukuMemo(data.shuku)));
       meta.appendChild(makeKoyomiMeta("二十四節気", withReading(data.solar.currentTerm.name, readings.solarTerm[data.solar.currentTerm.name]), memoFor("solarTerm", data.solar.currentTerm.name) || "季節の移り変わりを見る目安です。"));
       meta.appendChild(makeKoyomiMeta("月齢", moonAgeValue, memos.lunar.moonAge));
     }
