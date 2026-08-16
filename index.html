@@ -211,6 +211,55 @@
       overflow-wrap: anywhere;
     }
 
+    .koyomi-guide {
+      margin-top: var(--space-md);
+      padding-top: var(--space-sm);
+      border-top: 1px solid var(--color-line);
+    }
+
+    .koyomi-guide > summary {
+      margin-bottom: 0;
+    }
+
+    .koyomi-guide[open] > summary {
+      margin-bottom: var(--space-sm);
+    }
+
+    .koyomi-guide-list {
+      display: grid;
+      gap: var(--space-sm);
+      margin: 0;
+    }
+
+    .koyomi-guide-list > div {
+      min-width: 0;
+      padding-bottom: var(--space-sm);
+      border-bottom: 1px solid rgba(229, 216, 198, 0.75);
+    }
+
+    .koyomi-guide-list > div:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .koyomi-guide-list dt {
+      color: var(--color-text);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .koyomi-guide-list dd {
+      margin: 4px 0 0;
+      color: var(--color-muted);
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .koyomi-guide + .chips {
+      margin-top: var(--space-md);
+    }
+
     .score {
       display: grid;
       place-items: center;
@@ -1264,6 +1313,14 @@
         font-size: 17px;
       }
 
+      .koyomi-guide > summary {
+        width: 100%;
+      }
+
+      .koyomi-guide-list dd {
+        font-size: 14px;
+      }
+
       .detail {
         grid-template-columns: 1fr;
         gap: 4px;
@@ -1434,6 +1491,27 @@
     <section class="section koyomi-card" aria-label="今日の暦">
       <h2 class="section-title">今日の暦</h2>
       <div class="koyomi-meta-grid" id="koyomiMeta"></div>
+      <details class="koyomi-guide" id="koyomiGuide">
+        <summary>暦の項目について</summary>
+        <dl class="koyomi-guide-list">
+          <div>
+            <dt>日干支とは</dt>
+            <dd>十干と十二支を組み合わせた60通りの暦の巡りです。日ごとに順番に巡り、さまざまな選日や暦注を判定する基礎情報として使われます。</dd>
+          </div>
+          <div>
+            <dt>日九星とは</dt>
+            <dd>その日ごとに巡る九星です。その日の雰囲気や行動のヒントを見る補助情報として使います。</dd>
+          </div>
+          <div>
+            <dt>年九星とは</dt>
+            <dd>その年全体の背景を見る九星です。このアプリでは立春を境に年九星を切り替えています。</dd>
+          </div>
+          <div>
+            <dt>月齢とは</dt>
+            <dd>新月からどのくらい日数が経ったかを示す目安です。0前後が新月、約14〜15前後が満月に近い時期です。</dd>
+          </div>
+        </dl>
+      </details>
       <ul class="chips" id="normalList"></ul>
     </section>
 
@@ -1781,16 +1859,27 @@
         "開": "開く日。知らせる、広げる、外へ出す行動に向きます。",
         "閉": "閉じる日。広げるより内側の整理や休息に向きます。"
       },
-      kyusei: {
-        "一白水星": "流れを読み、柔らかく調整する意識が合いやすい日。",
-        "二黒土星": "足元を固め、日常の整えを進めやすい日。",
-        "三碧木星": "動き出しや発信のきっかけを作りやすい日。",
-        "四緑木星": "連絡、相談、調整を丁寧に進めやすい日。",
-        "五黄土星": "無理に動かず、中心を整える意識が大切な日。",
-        "六白金星": "段取りや責任ある判断を整えやすい日。",
-        "七赤金星": "会話や楽しみを通じて流れを作りやすい日。",
-        "八白土星": "切り替えや見直しを意識しやすい日。",
-        "九紫火星": "見える化、整理、伝えることに意識が向きやすい日。"
+      dayKyusei: {
+        "一白水星": "今日のヒント：流れを読み、柔らかく調整する意識を大切に。",
+        "二黒土星": "今日のヒント：足元を固め、身近なことを丁寧に整えて。",
+        "三碧木星": "今日のヒント：小さな一歩や発信のきっかけを意識して。",
+        "四緑木星": "今日のヒント：連絡や相談、調整を丁寧に進めて。",
+        "五黄土星": "今日のヒント：無理に広げすぎず、中心や足元を整える意識を大切に。",
+        "六白金星": "今日のヒント：段取りを整え、責任ある判断は落ち着いて。",
+        "七赤金星": "今日のヒント：会話や楽しみを、流れを整えるきっかけに。",
+        "八白土星": "今日のヒント：切り替えや見直しに目を向けて。",
+        "九紫火星": "今日のヒント：見える化や整理、伝え方を意識して。"
+      },
+      yearKyusei: {
+        "一白水星": "今年の背景：変化に合わせて柔らかく調整する流れとして参考にします。",
+        "二黒土星": "今年の背景：日々の積み重ねや土台づくりに目を向けやすい年です。",
+        "三碧木星": "今年の背景：新しい動きや発信のきっかけを意識する流れとして参考にします。",
+        "四緑木星": "今年の背景：人とのつながりや調整に目を向けやすい年です。",
+        "五黄土星": "今年の背景：中心や基盤を整え、見直しを意識する流れとして参考にします。",
+        "六白金星": "今年の背景：責任や段取りを整え、目標を意識しやすい年です。",
+        "七赤金星": "今年の背景：会話や楽しみ、実りを大切にする流れとして参考にします。",
+        "八白土星": "今年の背景：節目や切り替え、見直しに目を向けやすい年です。",
+        "九紫火星": "今年の背景：物事を見える形にし、伝え方を意識しやすい年です。"
       },
       solarTerm: {
         "夏至": "昼の長さが極まるころ。活動と休息のバランスを意識したい時期。",
@@ -2338,13 +2427,12 @@
     }
 
     function etoMemo(name) {
-      const specific = {
-        "庚申": "見直し・整理・仕組み化を意識しやすい日。",
-        "甲戌": "まっすぐ始める力と、守りを固める意識が重なりやすい日。",
-        "甲午": "勢いを活かしつつ、無理なく進める順番を整えたい日。"
-      };
-      if (specific[name]) return specific[name];
-      return "その日の干支。行動の雰囲気や選日の判定を見る手がかりです。";
+      if (!name || name.length < 2) {
+        return "十干と十二支を組み合わせた60干支のひとつ。選日などを判定する基礎情報として使います。";
+      }
+      const stem = name[0];
+      const branch = name.slice(1);
+      return `十干の「${stem}」と十二支の「${branch}」を組み合わせた60干支のひとつ。選日などを判定する基礎情報として使います。`;
     }
 
     function shukuRuleFor(name) {
@@ -2358,6 +2446,29 @@
     function memoFor(type, value) {
       if (type === "shuku") return shukuMemo(value);
       return memos[type]?.[value] || "";
+    }
+
+    function dayKyuseiMemo(name) {
+      return memoFor("dayKyusei", name)
+        || "今日一日の流れや行動のヒントを見る補助情報です。";
+    }
+
+    function yearKyuseiMemo(name) {
+      return memoFor("yearKyusei", name)
+        || "立春を境に、その年全体の背景を見る補助情報です。";
+    }
+
+    function moonAgeMemo(age) {
+      if (!Number.isFinite(age)) return memos.lunar.moonAge;
+      if (age < 1.5) return "新月前後の頃です。静かに整えたり、新しい区切りを意識する目安に。";
+      if (age < 6) return "新月を過ぎ、月が少しずつ満ちていく頃です。";
+      if (age < 9) return "上弦に近い時期です。少しずつ行動のペースを整える目安に。";
+      if (age < 13.5) return "満月へ向かって、月が満ちていく頃です。";
+      if (age < 16.5) return "満月に近い頃です。予定や気持ちを詰め込みすぎない目安に。";
+      if (age < 21) return "満月を過ぎ、月が少しずつ欠けていく頃です。";
+      if (age < 24) return "下弦に近い時期です。見直しや整理を意識する目安に。";
+      if (age < 28.5) return "新月へ向かって、月が細くなっていく頃です。";
+      return "新月が近づく頃です。休息や次の区切りを意識する目安に。";
     }
 
     function makeKoyomiMeta(label, value, memo) {
@@ -2404,12 +2515,12 @@
         {
           label: "日九星",
           value: withReading(data.dayKyusei, readings.kyusei[data.dayKyusei]),
-          memo: memoFor("kyusei", data.dayKyusei)
+          memo: dayKyuseiMemo(data.dayKyusei)
         },
         {
           label: "年九星",
           value: withReading(data.yearKyusei, readings.kyusei[data.yearKyusei]),
-          memo: memoFor("kyusei", data.yearKyusei)
+          memo: yearKyuseiMemo(data.yearKyusei)
         },
         {
           label: "二十八宿",
@@ -2429,7 +2540,7 @@
         {
           label: "月齢",
           value: data.moonAge.toFixed(1),
-          memo: memos.lunar.moonAge
+          memo: moonAgeMemo(data.moonAge)
         }
       ];
     }
