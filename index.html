@@ -174,62 +174,41 @@
       border-block: 1px solid var(--line);
     }
 
-    .key-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: var(--space-sm);
-    }
-
-    .koyomi-item {
-      min-width: 0;
-    }
-
-    .key-name {
-      margin: 0;
-      color: var(--accent);
-      font-size: 28px;
-      font-weight: 800;
-      line-height: 1.1;
-      overflow-wrap: anywhere;
-    }
-
     .koyomi-memo {
       margin: var(--space-xs) 0 0;
       color: var(--muted);
-      font-size: 12px;
-      line-height: 1.55;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
     }
 
     .koyomi-meta-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: var(--space-sm);
-      margin-top: var(--space-md);
+      align-items: stretch;
+      margin-top: 0;
     }
 
     .koyomi-meta-item {
       min-width: 0;
-      padding: var(--space-sm);
+      padding: var(--space-md);
       border: 1px solid var(--color-line);
       border-radius: var(--radius-card);
       background: var(--color-surface-soft);
     }
 
+    .koyomi-meta-item .label {
+      margin-bottom: 6px;
+    }
+
     .koyomi-meta-value {
       margin: 0;
       color: var(--color-text);
-      font-size: 15px;
+      font-size: 18px;
       font-weight: 800;
       line-height: 1.45;
       overflow-wrap: anywhere;
-    }
-
-    .green {
-      color: var(--green);
-    }
-
-    .blue {
-      color: var(--blue);
     }
 
     .score {
@@ -1043,15 +1022,6 @@
       background: var(--color-surface);
     }
 
-    .key-grid {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-
-    .key-name {
-      color: var(--color-primary);
-      font-size: 24px;
-    }
-
     .details {
       margin-top: 18px;
     }
@@ -1086,13 +1056,11 @@
       .category-grid,
       .ranking-controls,
       .ranking-item,
-      .ranking-factors,
-      .koyomi-meta-grid,
-      .key-grid {
+      .ranking-factors {
         grid-template-columns: 1fr;
       }
 
-      .key-grid {
+      .koyomi-meta-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
@@ -1288,12 +1256,12 @@
         font-size: 12px;
       }
 
-      .key-name {
-        font-size: 21px;
+      .koyomi-meta-grid {
+        grid-template-columns: 1fr;
       }
 
       .koyomi-meta-value {
-        font-size: 14px;
+        font-size: 17px;
       }
 
       .detail {
@@ -1445,36 +1413,26 @@
       </div>
     </section>
 
+    <section class="section month-card" aria-label="月間カレンダー">
+      <div class="month-header">
+        <button class="month-nav" id="prevMonthButton" type="button" aria-label="前月">前月</button>
+        <h2 class="month-title" id="monthTitle">月間カレンダー</h2>
+        <button class="month-nav" id="nextMonthButton" type="button" aria-label="次月">次月</button>
+      </div>
+      <div class="calendar-weekdays" aria-hidden="true">
+        <span class="sunday">日</span>
+        <span>月</span>
+        <span>火</span>
+        <span>水</span>
+        <span>木</span>
+        <span>金</span>
+        <span class="saturday">土</span>
+      </div>
+      <div class="calendar-grid" id="monthCalendar"></div>
+    </section>
+
     <section class="section koyomi-card" aria-label="今日の暦">
       <h2 class="section-title">今日の暦</h2>
-      <div class="key-grid">
-        <div class="koyomi-item">
-          <p class="label">六曜</p>
-          <p class="key-name" id="rokuyo">--</p>
-          <p class="koyomi-memo" id="rokuyoMemo"></p>
-        </div>
-        <div class="koyomi-item">
-          <p class="label">十二直</p>
-          <p class="key-name green" id="choku">--</p>
-          <p class="koyomi-memo" id="chokuMemo"></p>
-        </div>
-        <div class="koyomi-item">
-          <p class="label">日干支</p>
-          <p class="key-name blue" id="eto">--</p>
-          <p class="koyomi-memo" id="etoMemo"></p>
-        </div>
-        <div class="koyomi-item">
-          <p class="label">日九星</p>
-          <p class="key-name blue" id="dayKyusei">--</p>
-          <p class="koyomi-memo" id="dayKyuseiMemo"></p>
-        </div>
-        <div class="koyomi-item">
-          <p class="label">年九星</p>
-          <p class="key-name blue" id="yearKyusei">--</p>
-          <p class="koyomi-memo" id="yearKyuseiMemo"></p>
-        </div>
-      </div>
-      <p class="sub" id="lunar"></p>
       <div class="koyomi-meta-grid" id="koyomiMeta"></div>
       <ul class="chips" id="normalList"></ul>
     </section>
@@ -1492,24 +1450,6 @@
     <section class="section category-overview" aria-label="カテゴリ詳細">
       <h2>カテゴリ詳細</h2>
       <div class="category-grid" id="categoryOverview"></div>
-    </section>
-
-    <section class="section month-card" aria-label="月間カレンダー">
-      <div class="month-header">
-        <button class="month-nav" id="prevMonthButton" type="button" aria-label="前月">前月</button>
-        <h2 class="month-title" id="monthTitle">月間カレンダー</h2>
-        <button class="month-nav" id="nextMonthButton" type="button" aria-label="次月">次月</button>
-      </div>
-      <div class="calendar-weekdays" aria-hidden="true">
-        <span class="sunday">日</span>
-        <span>月</span>
-        <span>火</span>
-        <span>水</span>
-        <span>木</span>
-        <span>金</span>
-        <span class="saturday">土</span>
-      </div>
-      <div class="calendar-grid" id="monthCalendar"></div>
     </section>
 
     <section class="section next-best-card" aria-label="次のおすすめ日カード">
@@ -1898,6 +1838,10 @@
       "己巳の日": { kind: "good", text: "巳の日の中でも金運の意味が強い日。", weights: { total: 8, money: 14, shopping: 6, treat: 5 } },
       "神吉日": { kind: "good", text: "神社参拝や祈願に良いとされる日。", weights: { total: 3, relationship: 4, travel: 3, rest: 3 } },
       "重日": { kind: "neutral", text: "吉事も凶事も重なるとされる日。祝い事には吉、婚礼など重なることを避けたい事柄には注意。", weights: { total: 0 } },
+      "復日": { kind: "neutral", text: "行いが重なって現れるとされる日。善行や蓄えには向く一方、婚礼など繰り返しを避けたい事柄は慎重に。", weights: { total: 0, money: 2, marriage: -4 } },
+      "三伏（初伏）": { kind: "warn", text: "暑さが厳しくなる時期の最初の節目。無理な活動を控え、休息と体調管理を意識したい日。", weights: { total: -2, work: -2, travel: -2, rest: 5 } },
+      "三伏（中伏）": { kind: "warn", text: "暑さが続く時期の節目。予定を詰めすぎず、休息と体調管理を優先したい日。", weights: { total: -2, work: -2, travel: -2, rest: 5 } },
+      "三伏（末伏）": { kind: "warn", text: "残暑の時期の節目。疲れを持ち越さないよう、無理を控えて整えたい日。", weights: { total: -2, work: -2, travel: -2, rest: 5 } },
       "不成就日": { kind: "warn", text: "物事が成就しにくいとされる日。", weights: { total: -12, contract: -11, marriage: -12, work: -6, moving: -8 } },
       "三隣亡": { kind: "warn", text: "建築や移転に注意とされる日。", weights: { total: -5, moving: -14, contract: -5 } },
       "凶会日": { kind: "warn", text: "物事の重なりに注意とされる日。", weights: { total: -4, contract: -6, travel: -5, surgery: -5 } },
@@ -1909,6 +1853,7 @@
       "土用（間日）": { kind: "neutral", text: "土用期間中の間日。土用の慎重さを少し軽めに見ます。", weights: { total: -1, moving: -2, rest: 3 } },
       "月破": { kind: "warn", text: "月の気と日支がぶつかるとされる注意日。", weights: { total: -10, contract: -8, travel: -7, marriage: -7, surgery: -6 } },
       "血忌日": { kind: "warn", text: "血に関わることを忌むとされる暦注下段。", weights: { total: -4, surgery: -8, acupuncture: -5 } },
+      "天火日": { kind: "warn", text: "天の火気が強いとされ、棟上げ、屋根葺き、家屋の修造や転居は慎重にしたい日。", weights: { total: -3, moving: -7, work: -3 } },
       "狼籍日": { kind: "warn", text: "三箇の悪日のひとつ。荒れやすい日として扱います。", weights: { total: -5, contract: -4, relationship: -4 } },
       "大土": { kind: "warn", text: "大犯土。土を動かすことを忌む期間とされます。", weights: { total: -4, moving: -7 } },
       "小土": { kind: "warn", text: "小犯土。土を動かすことを忌む期間とされます。", weights: { total: -3, moving: -6 } },
@@ -1923,7 +1868,7 @@
     };
 
     const normalDisplayNames = new Set(["大安", "赤口", "先勝", "友引", "先負", "仏滅", "建", "除", "満", "平", "定", "執", "破", "危", "成", "納", "開", "閉", "一粒万倍日", "天赦日", "不成就日", "寅の日", "巳の日", "己巳の日", "天一天上", "土用", "土用（間日）", "月破", "三隣亡", "天恩日", "母倉日", "大明日", "甲子の日"]);
-    const detailDisplayNames = new Set(["神吉日", "重日", "凶会日", "血忌日", "狼籍日", "大土", "小土", "帰忌日", "月徳日", "受死日", "十死日", "八専", "八専（間日）"]);
+    const detailDisplayNames = new Set(["神吉日", "重日", "復日", "三伏（初伏）", "三伏（中伏）", "三伏（末伏）", "凶会日", "血忌日", "天火日", "狼籍日", "大土", "小土", "帰忌日", "月徳日", "受死日", "十死日", "八専", "八専（間日）"]);
     const directionAffinities = {
       "大安": { start: 2, grow: 1, connect: 1 },
       "友引": { connect: 3, start: 1 },
@@ -1960,6 +1905,11 @@
       "受死日": { start: -4, act: -3, heal: -2, rest: 2 },
       "十死日": { start: -3, act: -2, heal: -2, rest: 1 },
       "血忌日": { heal: -3 },
+      "天火日": { move: -3, start: -1 },
+      "復日": { grow: 1, connect: -1 },
+      "三伏（初伏）": { rest: 3, act: -1 },
+      "三伏（中伏）": { rest: 3, act: -1 },
+      "三伏（末伏）": { rest: 3, act: -1 },
       "三隣亡": { move: -4, start: -2 },
       "帰忌日": { move: -3, rest: 1 },
       "八専": { connect: -2, act: -1, rest: 1 },
@@ -2025,7 +1975,8 @@
       "庚申", "辛酉", "癸亥"
     ]);
     const kuenichiNamesBySolarMonth = {
-      // 凶会日は資料差が出やすいため、誤判定を生む簡易式ではなく検証済み対応表だけで判定する。
+      // 凶会日は宣明暦の節切りと貞享暦以降の旧暦月切りで配当が異なる。
+      // 採用体系を一つに確定できるまで、誤表示を避けるため判定しない。
     };
     // 二十八宿の用途別吉凶は、こよみ博物館と大崎八幡宮の解説を基準に現代の用途へ控えめに対応付ける。
     // 資料差がある用途は総合評価を強めず、説明文と用途別スコアを優先する。
@@ -2181,6 +2132,14 @@
     const bloodAvoidBranches = [1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 0];
     const kikobiBranches = [1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0];
     const roujakuBranches = [0, 3, 6, 9, 0, 3, 6, 9, 0, 3, 6, 9];
+    // 復日は節切りの月支と日干で決める。月支ごとに対象となる日干を0始まりで表す。
+    const fukunichiStemsByMonthBranch = {
+      0: [3, 9], 1: [4, 5], 2: [0, 6], 3: [1, 7],
+      4: [4, 5], 5: [2, 8], 6: [3, 9], 7: [4, 5],
+      8: [0, 6], 9: [1, 7], 10: [4, 5], 11: [2, 8]
+    };
+    // 天火日と狼籍日は同じ節月・日支の配当になる。
+    const tenkabiBranches = [0, 3, 6, 9, 0, 3, 6, 9, 0, 3, 6, 9];
     const hassenMabiIndexes = new Set([49, 52, 54, 58]);
     const doyoMabiBranchesByTerm = {
       "立春": [2, 3, 5],
@@ -2203,7 +2162,8 @@
       "2026-01-01", "2026-01-06", "2026-02-04", "2026-02-17",
       "2026-03-05", "2026-03-20", "2026-04-04", "2026-04-17",
       "2026-05-05", "2026-05-24", "2026-06-05", "2026-06-21",
-      "2026-06-29", "2026-07-07", "2026-07-12", "2026-07-14", "2026-07-15", "2026-07-20", "2026-08-02", "2026-08-07", "2026-09-23",
+      "2026-06-29", "2026-07-07", "2026-07-12", "2026-07-14", "2026-07-15", "2026-07-20", "2026-07-24", "2026-07-25",
+      "2026-08-02", "2026-08-07", "2026-08-14", "2026-08-16", "2026-09-23",
       "2026-10-08", "2026-11-07", "2026-12-07", "2026-12-22"
     ];
 
@@ -2255,7 +2215,7 @@
         }
       },
       "2026-07-14": {
-        memo: "参照: 日暦 https://higoyo.me/y26m7d14/ / 暦職人 https://koyomishokunin.com/20260714_koyomi/ 。日九星は二黒土星、年九星は一白水星。己丑は神吉日として扱わない。",
+        memo: "参照: 日暦 https://higoyo.me/y26m7d14/ / 暦職人 https://koyomishokunin.com/20260714_koyomi/ 。日九星は二黒土星、年九星は一白水星。己丑は神吉日として扱わず、復日は節切りの未月・己日で判定。",
         fields: {
           rokuyo: { external: "赤口", judgment: "OK" },
           choku: { external: "破", judgment: "OK" },
@@ -2263,11 +2223,11 @@
           kyusei: { external: "二黒土星", judgment: "OK" },
           yearKyusei: { external: "一白水星", judgment: "OK" },
           shuku: { external: "觜", judgment: "OK" },
-          senjitsu: { external: "十方暮 / 十死日 / 復日", judgment: "要確認" }
+          senjitsu: { external: "十方暮 / 十死日 / 復日", judgment: "OK" }
         }
       },
       "2026-07-15": {
-        memo: "参照: 日暦 https://higoyo.me/y26m7d15/ / 暦職人 https://koyomishokunin.com/20260715_koyomi/ 。日干支は庚寅。寅の日・十方暮に該当し、神吉日は含めない。二十八宿の参は用途別ルールで評価する。",
+        memo: "参照: 日暦 https://higoyo.me/y26m7d15/ / 暦職人 https://koyomishokunin.com/20260715_koyomi/ 。日干支は庚寅。寅の日・十方暮・三伏（初伏）に該当し、神吉日は含めない。",
         fields: {
           rokuyo: { external: "先勝", judgment: "OK" },
           choku: { external: "危", judgment: "OK" },
@@ -2275,11 +2235,25 @@
           kyusei: { external: "一白水星", judgment: "OK" },
           yearKyusei: { external: "一白水星", judgment: "OK" },
           shuku: { external: "参", judgment: "OK" },
-          senjitsu: { external: "寅の日 / 十方暮 / 三伏（初伏）", judgment: "要確認" }
+          senjitsu: { external: "寅の日 / 十方暮 / 三伏（初伏）", judgment: "OK" }
+        }
+      },
+      "2026-07-24": {
+        memo: "復日は節切りの未月・己日で判定。総合点への加減点は行わない。",
+        fields: {
+          eto: { external: "己亥", judgment: "OK" },
+          senjitsu: { external: "復日", judgment: "OK" }
+        }
+      },
+      "2026-07-25": {
+        memo: "夏至の日から数えた第4の庚日により三伏（中伏）と判定。",
+        fields: {
+          eto: { external: "庚子", judgment: "OK" },
+          senjitsu: { external: "三伏（中伏）", judgment: "OK" }
         }
       },
       "2026-08-02": {
-        memo: "参照: 日暦 https://higoyo.me/y26m8d2/ / 暦職人 https://koyomishokunin.com/20260802_koyomi/ 。日干支は戊申、二十八宿は虚、神吉日に該当。虚は学びと休息を用途別に加点し、相談・契約・婚礼・移転を注意として評価する。",
+        memo: "参照: 日暦 https://higoyo.me/y26m8d2/ / 暦職人 https://koyomishokunin.com/20260802_koyomi/ 。日干支は戊申、二十八宿は虚、神吉日と復日に該当。虚は用途別に評価する。",
         fields: {
           rokuyo: { external: "先勝", judgment: "OK" },
           choku: { external: "除", judgment: "OK" },
@@ -2287,8 +2261,19 @@
           kyusei: { external: "一白水星", judgment: "OK" },
           yearKyusei: { external: "一白水星", judgment: "OK" },
           shuku: { external: "虚", judgment: "OK" },
-          senjitsu: { external: "神吉日 / 天一天上 / 復日 / 土用（間日）", judgment: "要確認" }
+          senjitsu: { external: "神吉日 / 天一天上 / 復日 / 土用（間日）", judgment: "OK" }
         }
+      },
+      "2026-08-14": {
+        memo: "立秋の日から数えた最初の庚日により三伏（末伏）と判定。",
+        fields: {
+          eto: { external: "庚申", judgment: "OK" },
+          senjitsu: { external: "三伏（末伏）", judgment: "OK" }
+        }
+      },
+      "2026-08-16": {
+        memo: "国立天文台暦計算室の東京・日本標準時正午月齢で照合。期待値3.4。",
+        fields: {}
       },
       "2026-05-24": {
         memo: "参照: 日暦 https://higoyo.me/y26m5d24/ / 暦職人 https://koyomishokunin.com/20260524_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/5/24/2026 。主要項目は一致。",
@@ -2302,14 +2287,14 @@
         }
       },
       "2026-12-22": {
-        memo: "参照: 暦職人 https://koyomishokunin.com/20261222_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/12/22/2026 / 便利ジャパン https://www.benri.jp/calendar/etomonth/?month=12&year=2026 。九星は日家九星で照合。選日は外部が大土・神吉日・血忌日・天火日・狼籍日、アプリは月破を余分に含み天火日を未収録。",
+        memo: "参照: 暦職人 https://koyomishokunin.com/20261222_koyomi/ / 暦注下段 https://royalfortune.co.jp/koyomi/06_gedan.html 。天火日は節切りの子月・午日で判定。月破も月建の子と午日が正反対になるため採用し、外部サイトの省略差として扱う。",
         fields: {
           rokuyo: { external: "赤口", judgment: "OK" },
           choku: { external: "破", judgment: "OK" },
           eto: { external: "庚午", judgment: "OK" },
           kyusei: { external: "七赤金星", judgment: "OK" },
           shuku: { external: "室", judgment: "OK" },
-          senjitsu: { external: "大土 / 神吉日 / 血忌日 / 天火日 / 狼籍日", judgment: "NG" }
+          senjitsu: { external: "大土 / 神吉日 / 血忌日 / 天火日 / 狼籍日 / 月破", judgment: "OK" }
         }
       }
     };
@@ -2375,13 +2360,8 @@
       return memos[type]?.[value] || "";
     }
 
-    function setKoyomiField(valueId, memoId, value, reading, memo) {
-      document.getElementById(valueId).textContent = withReading(value, reading);
-      document.getElementById(memoId).textContent = memo || "";
-    }
-
     function makeKoyomiMeta(label, value, memo) {
-      const item = document.createElement("div");
+      const item = document.createElement("article");
       item.className = "koyomi-meta-item";
       const labelEl = document.createElement("p");
       labelEl.className = "label";
@@ -2396,6 +2376,62 @@
       item.appendChild(valueEl);
       item.appendChild(memoEl);
       return item;
+    }
+
+    const koyomiSummaryLabels = [
+      "六曜", "十二直", "日干支", "日九星", "年九星",
+      "二十八宿", "二十四節気", "旧暦", "月齢"
+    ];
+
+    function koyomiSummaryItems(data) {
+      const leapText = data.lunar.isLeap ? "閏" : "";
+      return [
+        {
+          label: "六曜",
+          value: withReading(data.rokuyo, readings.rokuyo[data.rokuyo]),
+          memo: memoFor("rokuyo", data.rokuyo)
+        },
+        {
+          label: "十二直",
+          value: withReading(data.choku, readings.choku[data.choku]),
+          memo: memoFor("choku", data.choku)
+        },
+        {
+          label: "日干支",
+          value: withReading(data.eto.name, etoReading(data.eto.name)),
+          memo: etoMemo(data.eto.name)
+        },
+        {
+          label: "日九星",
+          value: withReading(data.dayKyusei, readings.kyusei[data.dayKyusei]),
+          memo: memoFor("kyusei", data.dayKyusei)
+        },
+        {
+          label: "年九星",
+          value: withReading(data.yearKyusei, readings.kyusei[data.yearKyusei]),
+          memo: memoFor("kyusei", data.yearKyusei)
+        },
+        {
+          label: "二十八宿",
+          value: withReading(data.shuku, readings.shuku[data.shuku]),
+          memo: shukuMemo(data.shuku)
+        },
+        {
+          label: "二十四節気",
+          value: withReading(data.solar.currentTerm.name, readings.solarTerm[data.solar.currentTerm.name]),
+          memo: memoFor("solarTerm", data.solar.currentTerm.name) || "季節の移り変わりを見る目安です。"
+        },
+        {
+          label: "旧暦",
+          value: `${leapText}${data.lunar.month}月${data.lunar.day}日`,
+          memo: memos.lunar.lunarDate
+        },
+        {
+          label: "月齢",
+          value: data.moonAge.toFixed(1),
+          memo: memos.lunar.moonAge
+        }
+      ];
     }
 
     function inSupportedRange(value) {
@@ -2565,10 +2601,144 @@
       return kyuseiNames[index];
     }
 
+    function deltaTSeconds(year) {
+      if (year < 1941) {
+        const t = year - 1920;
+        return 21.2 + 0.84493 * t - 0.0761 * t ** 2 + 0.0020936 * t ** 3;
+      }
+      if (year < 1961) {
+        const t = year - 1950;
+        return 29.07 + 0.407 * t - t ** 2 / 233 + t ** 3 / 2547;
+      }
+      if (year < 1986) {
+        const t = year - 1975;
+        return 45.45 + 1.067 * t - t ** 2 / 260 - t ** 3 / 718;
+      }
+      if (year < 2005) {
+        const t = year - 2000;
+        return 63.86 + 0.3345 * t - 0.060374 * t ** 2
+          + 0.0017275 * t ** 3 + 0.000651814 * t ** 4 + 0.00002373599 * t ** 5;
+      }
+      if (year < 2050) {
+        const t = year - 2000;
+        return 62.92 + 0.32217 * t + 0.005589 * t ** 2;
+      }
+      const u = (year - 1820) / 100;
+      return -20 + 32 * u ** 2 - 0.5628 * (2150 - year);
+    }
+
+    function sinDegrees(degrees) {
+      return Math.sin(normalizeDegrees(degrees) * Math.PI / 180);
+    }
+
+    // Meeusの真の朔の周期項を用い、地球時からUTCへ換算した朔時刻を求める。
+    function trueNewMoonUtcMs(k) {
+      const t = k / 1236.85;
+      const e = 1 - 0.002516 * t - 0.0000074 * t ** 2;
+      const m = 2.5534 + 29.10535670 * k - 0.0000014 * t ** 2 - 0.00000011 * t ** 3;
+      const mp = 201.5643 + 385.81693528 * k + 0.0107582 * t ** 2
+        + 0.00001238 * t ** 3 - 0.000000058 * t ** 4;
+      const f = 160.7108 + 390.67050284 * k - 0.0016118 * t ** 2
+        - 0.00000227 * t ** 3 + 0.000000011 * t ** 4;
+      const omega = 124.7746 - 1.56375588 * k + 0.0020672 * t ** 2 + 0.00000215 * t ** 3;
+
+      let jde = 2451550.09765 + SYNODIC_MONTH * k + 0.0001337 * t ** 2
+        - 0.000000150 * t ** 3 + 0.00000000073 * t ** 4;
+      jde += -0.40720 * sinDegrees(mp)
+        + 0.17241 * e * sinDegrees(m)
+        + 0.01608 * sinDegrees(2 * mp)
+        + 0.01039 * sinDegrees(2 * f)
+        + 0.00739 * e * sinDegrees(mp - m)
+        - 0.00514 * e * sinDegrees(mp + m)
+        + 0.00208 * e ** 2 * sinDegrees(2 * m)
+        - 0.00111 * sinDegrees(mp - 2 * f)
+        - 0.00057 * sinDegrees(mp + 2 * f)
+        + 0.00056 * e * sinDegrees(2 * mp + m)
+        - 0.00042 * sinDegrees(3 * mp)
+        + 0.00042 * e * sinDegrees(m + 2 * f)
+        + 0.00038 * e * sinDegrees(m - 2 * f)
+        - 0.00024 * e * sinDegrees(2 * mp - m)
+        - 0.00017 * sinDegrees(omega)
+        - 0.00007 * sinDegrees(mp + 2 * m)
+        + 0.00004 * sinDegrees(2 * mp - 2 * f)
+        + 0.00004 * sinDegrees(3 * m)
+        + 0.00003 * sinDegrees(mp + m - 2 * f)
+        + 0.00003 * sinDegrees(2 * mp + 2 * f)
+        - 0.00003 * sinDegrees(mp + m + 2 * f)
+        + 0.00003 * sinDegrees(mp - m + 2 * f)
+        - 0.00002 * sinDegrees(mp - m - 2 * f)
+        - 0.00002 * sinDegrees(3 * mp + m)
+        + 0.00002 * sinDegrees(4 * mp);
+
+      const planetaryAngles = [
+        [299.77 + 0.107408 * k - 0.009173 * t ** 2, 0.000325],
+        [251.88 + 0.016321 * k, 0.000165],
+        [251.83 + 26.651886 * k, 0.000164],
+        [349.42 + 36.412478 * k, 0.000126],
+        [84.66 + 18.206239 * k, 0.000110],
+        [141.74 + 53.303771 * k, 0.000062],
+        [207.14 + 2.453732 * k, 0.000060],
+        [154.84 + 7.306860 * k, 0.000056],
+        [34.52 + 27.261239 * k, 0.000047],
+        [207.19 + 0.121824 * k, 0.000042],
+        [291.34 + 1.844379 * k, 0.000040],
+        [161.72 + 24.198154 * k, 0.000037],
+        [239.56 + 25.513099 * k, 0.000035],
+        [331.55 + 3.592518 * k, 0.000023]
+      ];
+      jde += planetaryAngles.reduce((sum, [angle, coefficient]) => (
+        sum + coefficient * sinDegrees(angle)
+      ), 0);
+
+      const year = 2000 + k / 12.3685;
+      return (jde - 2440587.5) * MS_PER_DAY - deltaTSeconds(year) * 1000;
+    }
+
     function getMoonAge(date) {
-      const knownNewMoon = Date.UTC(2000, 0, 6, 18, 14, 0);
-      const noonUtc = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
-      return ((noonUtc - knownNewMoon) / MS_PER_DAY % SYNODIC_MONTH + SYNODIC_MONTH) % SYNODIC_MONTH;
+      // 国立天文台の正午月齢と同じく、日本標準時12:00（UTC 03:00）で評価する。
+      const jstNoonUtc = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 3, 0, 0);
+      const targetJd = jstNoonUtc / MS_PER_DAY + 2440587.5;
+      const estimatedK = Math.floor((targetJd - 2451550.09765) / SYNODIC_MONTH);
+      let previousNewMoon = -Infinity;
+      for (let k = estimatedK - 2; k <= estimatedK + 2; k += 1) {
+        const newMoon = trueNewMoonUtcMs(k);
+        if (newMoon <= jstNoonUtc && newMoon > previousNewMoon) previousNewMoon = newMoon;
+      }
+      return (jstNoonUtc - previousNewMoon) / MS_PER_DAY;
+    }
+
+    function nthStemDateOnOrAfter(startDate, stem, occurrence) {
+      let found = 0;
+      for (let offset = 0; offset <= 40; offset += 1) {
+        const date = addDays(startDate, offset);
+        if (sexagenary(date).stem !== stem) continue;
+        found += 1;
+        if (found === occurrence) return date;
+      }
+      return null;
+    }
+
+    const sanpukuCache = new Map();
+
+    function getSanpukuDates(year) {
+      if (sanpukuCache.has(year)) return sanpukuCache.get(year);
+      const summerSolstice = solarTermDateJst(year, solarTerms.find(term => term.name === "夏至"));
+      const startOfAutumn = solarTermDateJst(year, solarTerms.find(term => term.name === "立秋"));
+      const dates = {
+        "三伏（初伏）": nthStemDateOnOrAfter(summerSolstice, 6, 3),
+        "三伏（中伏）": nthStemDateOnOrAfter(summerSolstice, 6, 4),
+        "三伏（末伏）": nthStemDateOnOrAfter(startOfAutumn, 6, 1)
+      };
+      sanpukuCache.set(year, dates);
+      return dates;
+    }
+
+    function getSanpukuName(date) {
+      const value = dateToInputValue(date);
+      const entry = Object.entries(getSanpukuDates(date.getFullYear())).find(([, target]) => (
+        target && dateToInputValue(target) === value
+      ));
+      return entry?.[0] || "";
     }
 
     function getShuku(date) {
@@ -2602,6 +2772,9 @@
       if (bosonichiBranchesByMonth[solarMonth]?.includes(branch)) notes.push("母倉日");
       if (shinkichiNames.has(eto.name)) notes.push("神吉日");
       if (branch === 5 || branch === 11) notes.push("重日");
+      if (fukunichiStemsByMonthBranch[monthBranch]?.includes(stem)) notes.push("復日");
+      const sanpukuName = getSanpukuName(date);
+      if (sanpukuName) notes.push(sanpukuName);
       if (fujobijuDays[lunar.month]?.includes(lunar.day)) notes.push("不成就日");
       if (sanrinboBranches[monthBranch] === branch) notes.push("三隣亡");
       if (kuenichiNamesBySolarMonth[solarMonth]?.includes(eto.name)) notes.push("凶会日");
@@ -2610,6 +2783,7 @@
       if (jisshibiBranches[solarMonth - 1] === branch) notes.push("十死日");
       if (bloodAvoidBranches[solarMonth - 1] === branch) notes.push("血忌日");
       if (kikobiBranches[solarMonth - 1] === branch) notes.push("帰忌日");
+      if (tenkabiBranches[solarMonth - 1] === branch) notes.push("天火日");
       if (roujakuBranches[solarMonth - 1] === branch) notes.push("狼籍日");
       if (eto.index >= 6 && eto.index <= 12) notes.push("大土");
       if (eto.index >= 14 && eto.index <= 20) notes.push("小土");
@@ -2618,6 +2792,7 @@
       if (eto.index >= 48 && eto.index <= 59) {
         notes.push(hassenMabiIndexes.has(eto.index) ? "八専（間日）" : "八専");
       }
+      // 月破は節切りの月建（月支）と正反対の日支に配当する。
       if ((branch + 6) % 12 === monthBranch) notes.push("月破");
 
       const doyoTerms = ["立春", "立夏", "立秋", "立冬"];
@@ -3451,33 +3626,17 @@
     }
 
     function renderKoyomiSummary(data) {
-      const leapText = data.lunar.isLeap ? "閏" : "";
-      const lunarValue = `旧暦 ${leapText}${data.lunar.month}月${data.lunar.day}日`;
-      const moonAgeValue = `月齢 ${data.moonAge.toFixed(1)}`;
-      setKoyomiField("rokuyo", "rokuyoMemo", data.rokuyo, readings.rokuyo[data.rokuyo], memoFor("rokuyo", data.rokuyo));
-      setKoyomiField("choku", "chokuMemo", data.choku, readings.choku[data.choku], memoFor("choku", data.choku));
-      setKoyomiField("eto", "etoMemo", data.eto.name, etoReading(data.eto.name), etoMemo(data.eto.name));
-      setKoyomiField("dayKyusei", "dayKyuseiMemo", data.dayKyusei, readings.kyusei[data.dayKyusei], memoFor("kyusei", data.dayKyusei));
-      setKoyomiField("yearKyusei", "yearKyuseiMemo", data.yearKyusei, readings.kyusei[data.yearKyusei], memoFor("kyusei", data.yearKyusei));
-      document.getElementById("lunar").textContent = `${lunarValue} / ${moonAgeValue}`;
-
       const meta = document.getElementById("koyomiMeta");
       meta.innerHTML = "";
-      meta.appendChild(makeKoyomiMeta("二十八宿", withReading(data.shuku, readings.shuku[data.shuku]), shukuMemo(data.shuku)));
-      meta.appendChild(makeKoyomiMeta("二十四節気", withReading(data.solar.currentTerm.name, readings.solarTerm[data.solar.currentTerm.name]), memoFor("solarTerm", data.solar.currentTerm.name) || "季節の移り変わりを見る目安です。"));
-      meta.appendChild(makeKoyomiMeta("月齢", moonAgeValue, memos.lunar.moonAge));
+      koyomiSummaryItems(data).forEach(item => {
+        meta.appendChild(makeKoyomiMeta(item.label, item.value, item.memo));
+      });
     }
 
     function renderEmptyKoyomiSummary() {
-      [
-        ["rokuyo", "rokuyoMemo"],
-        ["choku", "chokuMemo"],
-        ["eto", "etoMemo"],
-        ["dayKyusei", "dayKyuseiMemo"],
-        ["yearKyusei", "yearKyuseiMemo"]
-      ].forEach(([valueId, memoId]) => setKoyomiField(valueId, memoId, "--", "", ""));
-      document.getElementById("lunar").textContent = "";
-      document.getElementById("koyomiMeta").innerHTML = "";
+      const meta = document.getElementById("koyomiMeta");
+      meta.innerHTML = "";
+      koyomiSummaryLabels.forEach(label => meta.appendChild(makeKoyomiMeta(label, "--", "")));
       renderFactorList("todayPlusFactors", [], "加点要素を表示できません");
       renderFactorList("todayMinusFactors", [], "注意要素を表示できません");
     }
