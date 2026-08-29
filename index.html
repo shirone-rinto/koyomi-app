@@ -1943,7 +1943,12 @@
       "月破": { kind: "warn", text: "月の気と日支がぶつかるとされる注意日。", weights: { total: -10, contract: -8, travel: -7, marriage: -7, surgery: -6 } },
       "血忌日": { kind: "warn", text: "血に関わることを忌むとされる暦注下段。", weights: { total: -4, surgery: -8, acupuncture: -5 } },
       "天火日": { kind: "warn", text: "天の火気が強いとされ、棟上げ、屋根葺き、家屋の修造や転居は慎重にしたい日。", weights: { total: -3, moving: -7, work: -3 } },
-      "狼籍日": { kind: "warn", text: "三箇の悪日のひとつ。荒れやすい日として扱います。", weights: { total: -5, contract: -4, relationship: -4 } },
+      "地火日": {
+        kind: "warn",
+        text: "土を動かすことを忌むとされる日。建築、土木、基礎工事など土地に関わる予定は慎重にしたい日。",
+        weights: { total: 0 },
+        purposeWeights: { moving: -4 }
+      },
       "大土": { kind: "warn", text: "大犯土。土を動かすことを忌む期間とされます。", weights: { total: -4, moving: -7 } },
       "小土": { kind: "warn", text: "小犯土。土を動かすことを忌む期間とされます。", weights: { total: -3, moving: -6 } },
       "帰忌日": { kind: "warn", text: "帰宅や遠出、移動に注意とされる暦注下段。", weights: { total: -4, travel: -7, moving: -4 } },
@@ -1957,7 +1962,7 @@
     };
 
     const normalDisplayNames = new Set(["大安", "赤口", "先勝", "友引", "先負", "仏滅", "建", "除", "満", "平", "定", "執", "破", "危", "成", "納", "開", "閉", "一粒万倍日", "天赦日", "不成就日", "寅の日", "巳の日", "己巳の日", "天一天上", "土用", "土用（間日）", "月破", "三隣亡", "天恩日", "母倉日", "大明日", "甲子の日"]);
-    const detailDisplayNames = new Set(["神吉日", "重日", "復日", "三伏（初伏）", "三伏（中伏）", "三伏（末伏）", "凶会日", "血忌日", "天火日", "狼籍日", "大土", "小土", "帰忌日", "月徳日", "受死日", "十死日", "八専", "八専（間日）"]);
+    const detailDisplayNames = new Set(["神吉日", "重日", "復日", "三伏（初伏）", "三伏（中伏）", "三伏（末伏）", "凶会日", "血忌日", "天火日", "地火日", "大土", "小土", "帰忌日", "月徳日", "受死日", "十死日", "八専", "八専（間日）"]);
     const directionAffinities = {
       "大安": { start: 2, grow: 1, connect: 1 },
       "友引": { connect: 3, start: 1 },
@@ -2102,8 +2107,8 @@
       },
       "箕": {
         kind: "good",
-        text: "庭や住まいを整えること、婚礼や身支度に向く一方、葬送は控えめにしたい宿。",
-        weights: { total: 2, moving: 3, marriage: 3, beauty: 2, work: 2 }
+        text: "庭や住まいを整えること、普請や造作、身支度などに向く一方、婚礼は慎重にしたい宿。",
+        weights: { total: 2, moving: 3, marriage: -4, beauty: 2, work: 2 }
       },
       "斗": {
         kind: "good",
@@ -2220,15 +2225,17 @@
     const daimyoNames = new Set(["己巳", "庚午", "辛未", "壬申", "癸酉", "丁丑", "己卯", "壬午", "甲申", "丁亥", "壬辰", "乙未", "壬寅", "甲辰", "乙巳", "丙午", "丁未", "己酉", "庚戌", "辛亥", "丙辰", "戊午", "己未", "庚申", "辛酉"]);
     const bloodAvoidBranches = [1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 0];
     const kikobiBranches = [1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0];
-    const roujakuBranches = [0, 3, 6, 9, 0, 3, 6, 9, 0, 3, 6, 9];
     // 復日は節切りの月支と日干で決める。月支ごとに対象となる日干を0始まりで表す。
     const fukunichiStemsByMonthBranch = {
       0: [3, 9], 1: [4, 5], 2: [0, 6], 3: [1, 7],
       4: [4, 5], 5: [2, 8], 6: [3, 9], 7: [4, 5],
       8: [0, 6], 9: [1, 7], 10: [4, 5], 11: [2, 8]
     };
-    // 天火日と狼籍日は同じ節月・日支の配当になる。
+    // 天火日は節切りの月支と日支で判定する。
     const tenkabiBranches = [0, 3, 6, 9, 0, 3, 6, 9, 0, 3, 6, 9];
+    // 地火日は十二直「平」と同じ配当。節月の寅月から巳・午・未…の日へ順に巡る。
+    // 参照: Royal Fortune 暦注下段、西野神社 暦注解説。狼籍日は生年支が必要なためv1では判定しない。
+    const jikabiBranches = [5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4];
     const hassenMabiIndexes = new Set([49, 52, 54, 58]);
     const doyoMabiBranchesByTerm = {
       "立春": [2, 3, 5],
@@ -2253,7 +2260,7 @@
       "2026-05-05", "2026-05-24", "2026-06-05", "2026-06-21",
       "2026-06-29", "2026-07-07", "2026-07-12", "2026-07-14", "2026-07-15", "2026-07-20", "2026-07-24", "2026-07-25",
       "2026-08-02", "2026-08-07", "2026-08-14", "2026-08-16", "2026-09-23",
-      "2026-10-08", "2026-11-07", "2026-12-07", "2026-12-22"
+      "2026-10-08", "2026-11-07", "2026-12-01", "2026-12-07", "2026-12-22"
     ];
 
     const verificationResults = {
@@ -2364,6 +2371,22 @@
         memo: "国立天文台暦計算室の東京・日本標準時正午月齢で照合。期待値3.4。",
         fields: {}
       },
+      "2026-09-23": {
+        memo: "参照: Royal Fortune 暦注下段 / 西野神社 / 暦注下段ナビ。節切りの酉月・子日により地火日。二十八宿の箕は婚礼を凶として扱う。",
+        fields: {
+          choku: { external: "平", judgment: "OK" },
+          eto: { external: "庚子", judgment: "OK" },
+          shuku: { external: "箕", judgment: "OK" },
+          senjitsu: { external: "神吉日 / 月徳日 / 地火日", judgment: "OK" }
+        }
+      },
+      "2026-12-01": {
+        memo: "十死日の用途別上限を確認する代表日。開始・医療・積極行動・休息で異なる上限を適用する。",
+        fields: {
+          eto: { external: "己酉", judgment: "OK" },
+          senjitsu: { external: "一粒万倍日 / 天恩日 / 大明日 / 母倉日 / 神吉日 / 十死日", judgment: "OK" }
+        }
+      },
       "2026-05-24": {
         memo: "参照: 日暦 https://higoyo.me/y26m5d24/ / 暦職人 https://koyomishokunin.com/20260524_koyomi/ / 計算サイト https://www.calc-site.com/search_dates/5/24/2026 。主要項目は一致。",
         fields: {
@@ -2376,14 +2399,14 @@
         }
       },
       "2026-12-22": {
-        memo: "参照: 暦職人 https://koyomishokunin.com/20261222_koyomi/ / 暦注下段 https://royalfortune.co.jp/koyomi/06_gedan.html 。天火日は節切りの子月・午日で判定。月破も月建の子と午日が正反対になるため採用し、外部サイトの省略差として扱う。",
+        memo: "参照: 暦職人 https://koyomishokunin.com/20261222_koyomi/ / 暦注下段 https://royalfortune.co.jp/koyomi/06_gedan.html 。天火日は節切りの子月・午日で判定。月破は月建の子と午日が正反対になるため採用する。",
         fields: {
           rokuyo: { external: "赤口", judgment: "OK" },
           choku: { external: "破", judgment: "OK" },
           eto: { external: "庚午", judgment: "OK" },
           kyusei: { external: "七赤金星", judgment: "OK" },
           shuku: { external: "室", judgment: "OK" },
-          senjitsu: { external: "大土 / 神吉日 / 血忌日 / 天火日 / 狼籍日 / 月破", judgment: "OK" }
+          senjitsu: { external: "大土 / 神吉日 / 血忌日 / 天火日 / 月破", judgment: "OK" }
         }
       }
     };
@@ -2895,7 +2918,7 @@
       if (bloodAvoidBranches[solarMonth - 1] === branch) notes.push("血忌日");
       if (kikobiBranches[solarMonth - 1] === branch) notes.push("帰忌日");
       if (tenkabiBranches[solarMonth - 1] === branch) notes.push("天火日");
-      if (roujakuBranches[solarMonth - 1] === branch) notes.push("狼籍日");
+      if (jikabiBranches[solarMonth - 1] === branch) notes.push("地火日");
       if (eto.index >= 6 && eto.index <= 12) notes.push("大土");
       if (eto.index >= 14 && eto.index <= 20) notes.push("小土");
       if (eto.index >= 29 && eto.index <= 44) notes.push("天一天上");
@@ -2969,13 +2992,7 @@
     }
 
     function rawScoreForPurpose(notes, purpose) {
-      const categoryPart = notes.reduce((sum, note) => {
-        return sum + Object.entries(purpose.categoryWeights).reduce((inner, [categoryId, ratio]) => {
-          return inner + contributionForCategory(note, categoryId) * ratio;
-        }, 0);
-      }, 0);
-      const directionPart = notes.reduce((sum, note) => sum + directionContribution(note, purpose.direction), 0);
-      return 60 + categoryPart + directionPart;
+      return 60 + notes.reduce((sum, note) => sum + contributionForPurpose(note, purpose), 0);
     }
 
     function scoreValuesForPurpose(notes, purpose) {
@@ -2996,7 +3013,7 @@
       const names = new Set(notes.map(note => note.name));
       const caps = [];
       if (names.has("受死日")) caps.push(jushibiCapForPurpose(purpose));
-      if (names.has("十死日")) caps.push(52);
+      if (names.has("十死日")) caps.push(jisshibiCapForPurpose(purpose));
       const fujobijuCappedPurposeIds = new Set([
         "contract",
         "openBusiness",
@@ -3031,11 +3048,48 @@
       return 65;
     }
 
+    function jisshibiCapForPurpose(purpose) {
+      const startPurchasePurposeIds = new Set([
+        "contract",
+        "openBusiness",
+        "subscribe",
+        "startInvesting",
+        "bigShopping",
+        "wallet",
+        "appliance"
+      ]);
+      const activePurposeIds = new Set([
+        "presentation",
+        "interview",
+        "sales",
+        "offlineEvent",
+        "gym",
+        "businessTrip"
+      ]);
+      const quietPurposeIds = new Set(["shrine"]);
+
+      if (purpose.id === "total") return 60;
+      if (medicalPurposeIds.includes(purpose.id) || (purpose.categoryWeights.healthBody || 0) >= 0.5) return 52;
+      if (startPurchasePurposeIds.has(purpose.id) || purpose.direction === "start" || (purpose.categoryWeights.startContract || 0) >= 0.45) return 52;
+      if (purpose.id === "moving") return 55;
+      if (activePurposeIds.has(purpose.id) || purpose.direction === "act") return 58;
+      if (purpose.direction === "rest" || purpose.direction === "release" || (purpose.categoryWeights.restTune || 0) >= 0.45) return 78;
+      if (quietPurposeIds.has(purpose.id)) return 76;
+      if (purpose.direction === "move") return 60;
+      return 65;
+    }
+
     function contributionForPurpose(note, purpose) {
       const categoryPart = Object.entries(purpose.categoryWeights).reduce((sum, [categoryId, ratio]) => {
         return sum + contributionForCategory(note, categoryId) * ratio;
       }, 0);
-      return categoryPart + directionContribution(note, purpose.direction);
+      const purposePart = note.purposeWeights?.[purpose.id] || 0;
+      return categoryPart + directionContribution(note, purpose.direction) + purposePart;
+    }
+
+    function noteAppliesToPurpose(note, purpose) {
+      if (!note.purposeWeights || purpose.id === "total") return true;
+      return Object.prototype.hasOwnProperty.call(note.purposeWeights, purpose.id);
     }
 
     function scoreBreakdown(notes, categoryId) {
@@ -3225,7 +3279,8 @@
         "受死日": "無理に始めず、守りと休息を優先する",
         "十死日": "大きな決めごとは慎重に見直す",
         "血忌日": "体に関わる予定は無理せず確認する",
-        "帰忌日": "移動や帰宅予定に余裕を持つ"
+        "帰忌日": "移動や帰宅予定に余裕を持つ",
+        "地火日": "建築や土を動かす予定は慎重に見直す"
       };
       return cautions[note.name] || `${note.name}があるので、急がず確認を増やす`;
     }
@@ -3429,7 +3484,7 @@
       if (!data) return null;
       const scoreValues = scoreValuesForPurpose(data.notes, purpose);
       const goodNotes = data.notes.filter(note => note.kind === "good");
-      const warnNotes = data.notes.filter(note => note.kind === "warn");
+      const warnNotes = data.notes.filter(note => note.kind === "warn" && noteAppliesToPurpose(note, purpose));
       const breakdown = purposeScoreBreakdown(data.notes, purpose);
       return {
         date,
@@ -3894,7 +3949,7 @@
 
       const score = scoreForPurpose(data.notes, purpose);
       const goodNotes = data.notes.filter(note => note.kind === "good");
-      const warnNotes = data.notes.filter(note => note.kind === "warn");
+      const warnNotes = data.notes.filter(note => note.kind === "warn" && noteAppliesToPurpose(note, purpose));
       const normalNotes = displayNotes(data.notes, normalDisplayNames);
       const detailNotes = displayNotes(data.notes, detailDisplayNames);
       const forcedWarnings = purposeWarnings(data.notes, purpose);
