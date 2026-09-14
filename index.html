@@ -2097,8 +2097,10 @@
       },
       "心": {
         kind: "warn",
-        text: "祈りや静かな振り返りには向く一方、婚礼、建築、移転など大きな節目は慎重にしたい宿。",
-        weights: { total: -3, rest: 3, marriage: -6, moving: -5, work: -3, relationship: -2 }
+        // こよみ博物館は祭祀・供養を吉、造作・婚礼を凶とし、大崎八幡宮は移転も凶とする。
+        // 移転・旅行は資料差があるため、移転は弱い注意、旅行は中立として強い評価を避ける。
+        text: "神仏への祈りや供養に向く一方、婚礼や建築・造作は慎重にしたい宿。移転や旅行は資料差があるため、確認を丁寧に。",
+        weights: { total: -1, rest: 3, marriage: -6, moving: -2, travel: 0, work: 0, contract: 0, relationship: 0 }
       },
       "尾": {
         kind: "good",
@@ -2287,14 +2289,15 @@
         }
       },
       "2026-06-29": {
-        memo: "参照: 日暦 https://higoyo.me/y26m6d29/ / 暦職人 https://koyomishokunin.com/20260629_koyomi/ 。暦注下段は該当なし、選日は大土のみ。神吉日は含めない。",
+        memo: "参照: 日暦 https://higoyo.me/y26m6d29/ / 暦職人 https://koyomishokunin.com/20260629_koyomi/ / こよみ博物館 / 大崎八幡宮。暦注下段は該当なし、選日は大土のみ。心宿は祭祀・供養を吉、婚礼・造作を凶とし、資料差のある移転は弱い注意、旅行は中立に扱う。",
         fields: {
           rokuyo: { external: "先勝", judgment: "OK" },
           choku: { external: "定", judgment: "OK" },
           eto: { external: "甲戌", judgment: "OK" },
           kyusei: { external: "八白土星", judgment: "OK" },
           shuku: { external: "心", judgment: "OK" },
-          senjitsu: { external: "大土（大犯土）", judgment: "OK" }
+          senjitsu: { external: "大土（大犯土）", judgment: "OK" },
+          score: { external: "66（心宿調整後）", judgment: "OK" }
         }
       },
       "2026-07-12": {
